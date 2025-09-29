@@ -23,15 +23,15 @@ body:
     validations:
       required: true
 
-  - type: checkboxes
+  - type: textarea
     id: tasks
     attributes:
       label: "할 일 목록"
-      description: "이슈 해결을 위해 필요한 작업들을 나열해주세요."
-      options:
-        - label: "Task 1"
-        - label: "Task 2"
-        - label: "Task 3"
+      description: "이슈 해결을 위해 필요한 작업들을 자유롭게 나열해주세요. (마크다운 체크박스 형식 사용 가능)"
+      placeholder: |
+        - [ ] Task 1
+        - [ ] Task 2
+        - [ ] Task 3
 
   - type: textarea
     id: reference
