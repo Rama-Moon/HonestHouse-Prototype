@@ -29,9 +29,9 @@ body:
       label: "할 일 목록"
       description: "이슈 해결을 위해 필요한 작업들을 나열해주세요."
       options:
-        - label: "TODO"
-        - label: "TODO"
-        - label: "TODO"
+        - label: "Task 1"
+        - label: "Task 2"
+        - label: "Task 3"
 
   - type: textarea
     id: reference
