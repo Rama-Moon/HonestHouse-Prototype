@@ -1,0 +1,41 @@
+name: "📝 Issue"
+description: "공통적으로 사용할 기본 이슈 템플릿"
+title: "📝 Issue: 제목"
+labels: []
+assignees: []
+
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: "이슈 요약"
+      description: "이슈에 대한 간단한 설명을 작성해주세요."
+      placeholder: "예: 회원가입 시 이메일 중복 체크 오류 발생"
+    validations:
+      required: true
+
+  - type: textarea
+    id: detail
+    attributes:
+      label: "상세 내용"
+      description: "문제 상황, 개선할 기능, 작업해야 할 내용을 자세히 적어주세요."
+      placeholder: "- 문제 발생 경위\n- 개선이 필요한 이유\n- 기대하는 결과"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: "할 일 목록"
+      description: "이슈 해결을 위해 필요한 작업들을 나열해주세요."
+      options:
+        - label: "TODO"
+        - label: "TODO"
+        - label: "TODO"
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: "참고 자료(선택)"
+      description: "관련 문서, 링크, 참고할 만한 자료가 있다면 작성해주세요."
+      placeholder: "- 관련 문서 링크\n- 레퍼런스 코드 등"
