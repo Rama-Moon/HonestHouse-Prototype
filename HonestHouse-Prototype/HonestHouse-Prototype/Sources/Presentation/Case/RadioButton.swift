@@ -10,6 +10,7 @@ import SwiftUI
 struct RadioButton<T: Hashable>: View {
     let label: String
     let value: T
+    var isEnabled: Bool = true
     @Binding var selectedValue: T
 
     var body: some View {
@@ -18,13 +19,14 @@ struct RadioButton<T: Hashable>: View {
         }) {
             HStack(spacing: 12) {
                 Image(systemName: selectedValue == value ? "largecircle.fill.circle" : "circle")
-                    .foregroundColor(selectedValue == value ? .hhcolor(color: .text(.secondary)) : .hhcolor(color: .buttonBackground(.secondary)))
+
                 Text(label)
-                    .foregroundColor(.hhcolor(color: .text(.secondary)))
             }
+            .foregroundColor(isEnabled ? .hhcolor(color: .text(.secondary)) : .hhcolor(color: .buttonBackground(.secondary)))
             .padding(.vertical, 4)
         }
         .buttonStyle(PlainButtonStyle())
+        .disabled(!isEnabled)
     }
 }
 
