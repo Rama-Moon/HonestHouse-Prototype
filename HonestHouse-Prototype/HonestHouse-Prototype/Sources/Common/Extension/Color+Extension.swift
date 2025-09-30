@@ -45,4 +45,7 @@ extension Color {
         return String(format: "%06X", rgb)
     }
     
+    static func hhcolor(_ token: Constants.Color.Token) -> Self {
+        token.color
+    }
 }
