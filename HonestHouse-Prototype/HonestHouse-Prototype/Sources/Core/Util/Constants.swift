@@ -35,13 +35,15 @@ struct Constants {
         }
         
         enum Text {
-            case primary, secondary
+            case primary, secondary, white
             var color: SwiftUI.Color {
                 switch self {
                 case .primary:
                     SwiftUI.Color(hex: "#000000")
                 case .secondary:
                     SwiftUI.Color(hex: "#111111")
+                case .white:
+                    SwiftUI.Color(hex: "#FFFFFF")
                 }
             }
         }
