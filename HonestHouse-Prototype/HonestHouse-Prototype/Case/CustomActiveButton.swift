@@ -1,0 +1,35 @@
+//
+//  CustomActiveButton.swift
+//  HonestHouse-Prototype
+//
+//  Created by 이현주 on 9/30/25.
+//
+
+import SwiftUI
+
+struct CustomActiveButton: View {
+    let title: String
+    let action: () -> Void
+    var isEnabled: Bool = true
+    
+    var body: some View {
+        Button(action: {
+            if isEnabled {
+                action()
+            }
+        }) {
+            Text(title)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .font(.system(size: 16, weight: .bold))
+                .background(isEnabled ? Color.blue : Color.gray.opacity(0.3))
+                .foregroundColor(.white)
+                .cornerRadius(12)
+        }
+        .disabled(!isEnabled)
+    }
+}
+
+#Preview {
+    CustomActiveButton(title: "완료", action: { print("클릭") })
+}
