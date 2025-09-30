@@ -9,29 +9,35 @@ import SwiftUI
 
 struct CaseSelectView: View {
     @Bindable var viewModel: CaseSelectViewModel = .init()
+    @State private var goToMetering: Bool = false
     
     var body: some View {
-        VStack(alignment: .leading) {
-            ForEach(Array(Case.allCases.enumerated()), id: \.element) { index, section in
-                
-                renderRadioSection(for: section)
-                
-                if index < Case.allCases.count - 1 {
-                    Spacer()
-                    Divider()
-                    Spacer()
+        NavigationStack {
+            VStack(alignment: .leading) {
+                ForEach(Array(Case.allCases.enumerated()), id: \.element) { index, section in
+                    
+                    renderRadioSection(for: section)
+                    
+                    if index < Case.allCases.count - 1 {
+                        Spacer()
+                        Divider()
+                        Spacer()
+                    }
                 }
+                
+                Spacer()
+                
+                CustomActiveButton(title: "완료", action: {
+                    goToMetering = true
+                }, isEnabled: viewModel.allSelectionsMade)
             }
-            
-            Spacer()
-            
-            CustomActiveButton(title: "완료", action: {
-                print("완료 클릭")
-            }, isEnabled: viewModel.allSelectionsMade)
+            .padding()
+            .navigationDestination(isPresented: $goToMetering, destination: {
+                ExposureMeterView()
+            })
+            .navigationTitle("Case")
+            .navigationBarTitleDisplayMode(.large)
         }
-        .padding()
-        .navigationTitle("Case")
-        .navigationBarTitleDisplayMode(.large)
     }
     
     @ViewBuilder
@@ -54,8 +60,4 @@ struct CaseSelectView: View {
             RadioButtonGroup(title: section.rawValue, options: DOF.allCases, isEnabled: viewModel.selectedSubject != .scenery, selected: $viewModel.selectedDOF)
         }
     }
-}
-
-#Preview {
-    CaseSelectView()
 }
