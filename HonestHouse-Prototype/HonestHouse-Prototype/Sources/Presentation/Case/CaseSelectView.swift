@@ -14,60 +14,61 @@ struct CaseSelectView: View {
     @State private var selectedMovement: Movements? = nil
     @State private var selectedDOF: DOF? = nil
     
-    var shouldShowDOF: Bool {
-        guard let subject = selectedSubject else { return false }
-        if subject == .scenery {
-            return true
-        } else {
-            return selectedMovement != nil
-        }
-    }
-    
     var allSelectionsMade: Bool {
         guard selectedPlace != nil,
-              selectedSubject != nil,
-              selectedDOF != nil else {
+              selectedSubject != nil
+        else {
             return false
         }
 
         if selectedSubject == .scenery {
             return true
         } else {
-            return selectedMovement != nil
+            return selectedMovement != nil && selectedDOF != nil
         }
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            RadioButtonGroup(title: "장소", options: Place.allCases, selected: $selectedPlace)
-            
-            if selectedPlace != nil {
-                Divider()
-                
-                RadioButtonGroup(title: "피사체", options: Subject.allCases, selected: $selectedSubject)
-                    .onChange(of: selectedSubject) { oldValue, newValue in
-                        // subject 바뀔 때마다 관련 선택값 초기화
-                        selectedMovement = nil
-                        selectedDOF = nil
-                    }
-            }
-            
-            // "풍경" 선택 X, 움직임 Case로 넘어감
-            if let subject = selectedSubject, subject != .scenery {
-                Divider()
-                
-                RadioButtonGroup(title: "움직임", options: Movements.allCases, selected: $selectedMovement)
-            }
-            
-            if shouldShowDOF {
-                Divider()
-                
-                RadioButtonGroup(title: "심도", options: DOF.allCases, selected: $selectedDOF)
-            }
+        VStack(alignment: .leading) {
+            RadioButtonGroup(title: "장소", options: Place.allCases, isEnabled: true, selected: $selectedPlace)
             
             Spacer()
+            Divider()
+            Spacer()
+
+            RadioButtonGroup(title: "피사체", options: Subject.allCases, isEnabled: true, selected: $selectedSubject)
+                .onChange(of: selectedSubject) { _, _ in
+                    selectedMovement = nil
+                    selectedDOF = nil
+                }
             
-            CustomActiveButton(title: "완료", action: { print("클릭") }, isEnabled: allSelectionsMade)
+            Spacer()
+            Divider()
+            Spacer()
+            
+            RadioButtonGroup(
+                title: "움직임",
+                options: Movements.allCases,
+                isEnabled: selectedSubject != .scenery,
+                selected: $selectedMovement
+            )
+            
+            Spacer()
+            Divider()
+            Spacer()
+
+            RadioButtonGroup(
+                title: "아웃포커싱",
+                options: DOF.allCases,
+                isEnabled: selectedSubject != .scenery,
+                selected: $selectedDOF
+            )
+
+            Spacer()
+
+            CustomActiveButton(title: "완료", action: {
+                print("완료 클릭")
+            }, isEnabled: allSelectionsMade)
         }
         .padding()
     }
