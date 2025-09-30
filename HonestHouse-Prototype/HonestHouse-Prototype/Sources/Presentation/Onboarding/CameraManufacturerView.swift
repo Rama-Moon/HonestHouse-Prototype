@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct CameraManufacturerView: View {
+    @Binding var isOnboarding: Bool
+    
     @AppStorage("cameraManufacturer") private var selectedManufacturer: String = ""
-    @State private var path = NavigationPath()
+    @State private var path: [OnboardingRoute] = []
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -20,8 +22,13 @@ struct CameraManufacturerView: View {
                 Divider()
                 cameraButton(title: "Nikon")
             }
-            .navigationDestination(for: String.self) { brand in
-                NextView(brand: brand)
+            .navigationDestination(for: OnboardingRoute.self) { route in
+                switch route {
+                case .cameraBody(let m):
+                    CameraBodySelectionView(manufacturer: m, path: $path)
+                case .cameraLens(let m):
+                    CameraLensSelectionView(manufacturer: m, isOnboarding: $isOnboarding)
+                }
             }
         }
     }
