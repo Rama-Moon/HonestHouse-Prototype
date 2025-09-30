@@ -16,11 +16,11 @@ struct CameraManufacturerView: View {
     var body: some View {
         NavigationStack(path: $path) {
             VStack(spacing: 0) {
-                cameraButton(title: "SONY")
+                cameraButton(.sony)
                 Divider()
-                cameraButton(title: "Canon")
+                cameraButton(.canon)
                 Divider()
-                cameraButton(title: "Nikon")
+                cameraButton(.nikon)
             }
             .navigationDestination(for: OnboardingRoute.self) { route in
                 switch route {
@@ -33,12 +33,12 @@ struct CameraManufacturerView: View {
         }
     }
     
-    func cameraButton(title: String) -> some View {
-        Button(action: {
-            selectedManufacturer = title
-            path.append(title)
-        }) {
-            Text(title)
+    func cameraButton(_ manufacturer: Manufacturer) -> some View {
+        Button {
+            selectedManufacturer = manufacturer.rawValue
+            path.append(.cameraBody(manufacturer))
+        } label: {
+            Text(manufacturer.rawValue)
                 .font(.system(size: 30, weight: .bold))
                 .foregroundColor(.black)
                 .frame(maxWidth: .infinity)
