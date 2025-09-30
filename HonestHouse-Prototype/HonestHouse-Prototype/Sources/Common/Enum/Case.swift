@@ -7,6 +7,13 @@
 
 import Foundation
 
+enum Case: String, CaseIterable, Hashable {
+    case place = "장소"
+    case subject = "피사체"
+    case movements = "움직임"
+    case dof = "아웃포커싱"
+}
+
 enum Place: String, CaseIterable, Hashable {
     case indoor = "실내"
     case outdoor = "실외"
