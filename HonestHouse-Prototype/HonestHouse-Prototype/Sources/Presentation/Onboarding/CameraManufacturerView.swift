@@ -47,16 +47,3 @@ struct CameraManufacturerView: View {
         }
     }
 }
-
-struct NextView: View {
-    let brand: String
-    
-    var body: some View {
-        Text("\(brand) 선택됨")
-            .navigationTitle(brand)
-    }
-}
-
-#Preview {
-    CameraManufacturerView()
-}
