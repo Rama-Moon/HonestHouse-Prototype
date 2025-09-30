@@ -11,7 +11,7 @@ import SwiftUI
 struct HonestHouse_PrototypeApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ExposureMeterView()
         }
     }
 }
