@@ -9,6 +9,8 @@ import SwiftUI
 
 struct CameraBodySelectionView: View {
     let manufacturer: Manufacturer
+    @Binding var path: [OnboardingRoute]
+    
     @State private var selectedBody: CameraBody? = nil
     
     var body: some View {
@@ -20,16 +22,11 @@ struct CameraBodySelectionView: View {
                 label: { $0.name }
             )
             CustomActiveButton(title: "렌즈 선택하기", action: {
-                print("렌즈 선택하기 누름")
-                // TODO: LensSelectView로 이동
+                path.append(.cameraLens(manufacturer))
             }, isEnabled: selectedBody != nil)
             .padding(.horizontal, 16)
         }
         .navigationTitle(manufacturer.rawValue)
         .navigationBarTitleDisplayMode(.large)
     }
-}
-
-#Preview {
-    CameraBodySelectionView(manufacturer: .canon)
 }
