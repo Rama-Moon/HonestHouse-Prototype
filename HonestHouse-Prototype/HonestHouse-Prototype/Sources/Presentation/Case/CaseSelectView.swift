@@ -8,25 +8,7 @@
 import SwiftUI
 
 struct CaseSelectView: View {
-    // 선택된 의도들
-    @State private var selectedPlace: Place? = nil
-    @State private var selectedSubject: Subject? = nil
-    @State private var selectedMovement: Movements? = nil
-    @State private var selectedDOF: DOF? = nil
-    
-    var allSelectionsMade: Bool {
-        guard selectedPlace != nil,
-              selectedSubject != nil
-        else {
-            return false
-        }
-        
-        if selectedSubject == .scenery {
-            return true
-        } else {
-            return selectedMovement != nil && selectedDOF != nil
-        }
-    }
+    @Bindable var viewModel: CaseSelectViewModel = .init()
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -45,7 +27,7 @@ struct CaseSelectView: View {
             
             CustomActiveButton(title: "완료", action: {
                 print("완료 클릭")
-            }, isEnabled: allSelectionsMade)
+            }, isEnabled: viewModel.allSelectionsMade)
         }
         .padding()
         .navigationTitle("Case")
@@ -56,20 +38,20 @@ struct CaseSelectView: View {
     func renderRadioSection(for section: Case) -> some View {
         switch section {
         case .place:
-            RadioButtonGroup(title: section.rawValue, options: Place.allCases, isEnabled: true, selected: $selectedPlace)
+            RadioButtonGroup(title: section.rawValue, options: Place.allCases, isEnabled: true, selected: $viewModel.selectedPlace)
             
         case .subject:
-            RadioButtonGroup(title: section.rawValue, options: Subject.allCases, isEnabled: true, selected: $selectedSubject)
-                .onChange(of: selectedSubject) { _, _ in
-                    selectedMovement = nil
-                    selectedDOF = nil
+            RadioButtonGroup(title: section.rawValue, options: Subject.allCases, isEnabled: true, selected: $viewModel.selectedSubject)
+                .onChange(of: viewModel.selectedSubject) { _, _ in
+                    viewModel.selectedMovement = nil
+                    viewModel.selectedDOF = nil
                 }
             
         case .movements:
-            RadioButtonGroup(title: section.rawValue, options: Movements.allCases, isEnabled: selectedSubject != .scenery, selected: $selectedMovement)
+            RadioButtonGroup(title: section.rawValue, options: Movements.allCases, isEnabled: viewModel.selectedSubject != .scenery, selected: $viewModel.selectedMovement)
             
         case .dof:
-            RadioButtonGroup(title: section.rawValue, options: DOF.allCases, isEnabled: selectedSubject != .scenery, selected: $selectedDOF)
+            RadioButtonGroup(title: section.rawValue, options: DOF.allCases, isEnabled: viewModel.selectedSubject != .scenery, selected: $viewModel.selectedDOF)
         }
     }
 }
