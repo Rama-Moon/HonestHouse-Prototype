@@ -49,8 +49,7 @@ struct CaseSelectView: View {
         case .subject:
             RadioButtonGroup(title: section.rawValue, options: Subject.allCases, isEnabled: true, selected: $viewModel.selectedSubject)
                 .onChange(of: viewModel.selectedSubject) { _, _ in
-                    viewModel.selectedMovement = nil
-                    viewModel.selectedDOF = nil
+                    viewModel.resetAfterSubjectChange()
                 }
             
         case .movements:
