@@ -22,8 +22,8 @@ struct CustomActiveButton: View {
                 .frame(maxWidth: .infinity)
                 .padding()
                 .font(.system(size: 16, weight: .bold))
-                .background(isEnabled ? Color.blue : Color.gray.opacity(0.3))
-                .foregroundColor(.white)
+                .background(isEnabled ? .hhcolor(color: .buttonBackground(.primary)) : .hhcolor(color: .buttonBackground(.disabled)))
+                .foregroundColor(isEnabled ? .hhcolor(color: .buttonText(.primary)) : .hhcolor(color: .buttonText(.disabled)))
                 .cornerRadius(12)
         }
         .disabled(!isEnabled)

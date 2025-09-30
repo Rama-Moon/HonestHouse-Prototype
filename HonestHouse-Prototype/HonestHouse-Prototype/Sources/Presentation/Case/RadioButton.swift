@@ -18,9 +18,9 @@ struct RadioButton<T: Hashable>: View {
         }) {
             HStack(spacing: 12) {
                 Image(systemName: selectedValue == value ? "largecircle.fill.circle" : "circle")
-                    .foregroundColor(selectedValue == value ? .black : .gray)
+                    .foregroundColor(selectedValue == value ? .hhcolor(color: .text(.secondary)) : .hhcolor(color: .buttonBackground(.secondary)))
                 Text(label)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.hhcolor(color: .text(.secondary)))
             }
             .padding(.vertical, 4)
         }
