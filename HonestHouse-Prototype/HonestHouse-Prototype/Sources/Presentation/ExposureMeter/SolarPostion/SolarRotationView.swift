@@ -85,7 +85,3 @@ struct SolarRotationView: View {
         return delta
     }
 }
-
-#Preview {
-    SolarRotationView()
-}
