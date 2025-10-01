@@ -19,8 +19,10 @@ final class ExposureManager {
         isoCap: Int,
         isNight: Bool,
         isBacklight: Bool,
-        evBacklightBias: Double
+        evBacklightBias: Double = 0.7
     ) -> (subtype: ModeSubtype, base: ExposureSetting, spectrum: [ExposureSetting]) {
+        
+        let evEff: Double
         
         // 역광일 때, EV 보정
         if isBacklight {
