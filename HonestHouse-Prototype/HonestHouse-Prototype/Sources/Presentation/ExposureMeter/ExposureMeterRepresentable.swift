@@ -11,6 +11,8 @@ struct ExposureMeterRepresentable: UIViewRepresentable {
     @Binding var ev: Double
     var onStabilized: () -> Void
     var onUnstabilized: () -> Void
+    
+    @Binding var isPaused: Bool
 
     func makeUIView(context: Context) -> ExposureMeterUIView {
         let view = ExposureMeterUIView()
@@ -36,5 +38,7 @@ struct ExposureMeterRepresentable: UIViewRepresentable {
         return view
     }
 
-    func updateUIView(_ uiView: ExposureMeterUIView, context: Context) {}
+    func updateUIView(_ uiView: ExposureMeterUIView, context: Context) {
+        uiView.setPaused(isPaused)
+    }
 }
