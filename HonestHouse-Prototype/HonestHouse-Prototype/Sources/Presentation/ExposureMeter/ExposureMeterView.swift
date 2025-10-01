@@ -49,6 +49,7 @@ struct ExposureMeterView: View {
                 }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea(.all, edges: .all)
             
             VStack {
                 if !showDetailValue {
