@@ -64,6 +64,15 @@ struct SolarRotationView: View {
         guard let sunAzimuth = solar.azimuth else { return }
         let deviceHeading = heading.headingInDegrees
         relativeBearing = signedAngleDelta(from: deviceHeading, to: sunAzimuth)
+    private func checkBacklit(relativeBearing: Double, sunElevation: Double, currentState: Bool) -> Bool {
+        guard sunElevation > -0.833 else { return false }
+        let bearingAbs = abs(relativeBearing)
+        
+        if currentState {
+            return bearingAbs <= 50.0
+        } else {
+            return bearingAbs <= 45.0
+        }
     }
     
     private func signedAngleDelta(from a: Double, to b: Double) -> Double {
