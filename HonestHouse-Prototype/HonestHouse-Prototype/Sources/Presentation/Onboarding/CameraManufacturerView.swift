@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CameraManufacturerView: View {
+    @Environment(\.modelContext) private var modelContext
     @Binding var isOnboarding: Bool
     
     @AppStorage("cameraManufacturer") private var selectedManufacturer: String = ""
@@ -25,9 +26,9 @@ struct CameraManufacturerView: View {
             .navigationDestination(for: OnboardingRoute.self) { route in
                 switch route {
                 case .cameraBody(let m):
-                    CameraBodySelectionView(manufacturer: m, path: $path)
+                    CameraBodySelectionView(manufacturer: m, path: $path, modelContext: modelContext)
                 case .cameraLens(let m):
-                    CameraLensSelectionView(manufacturer: m, isOnboarding: $isOnboarding)
+                    CameraLensSelectionView(manufacturer: m, modelContext: modelContext, isOnboarding: $isOnboarding)
                 }
             }
         }

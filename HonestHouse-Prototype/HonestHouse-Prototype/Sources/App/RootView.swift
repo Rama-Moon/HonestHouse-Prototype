@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RootView: View {
     @AppStorage("isOnboarding") private var isOnboarding: Bool = true
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         if isOnboarding {

@@ -6,13 +6,16 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct CameraLensSelectionView: View {
     let manufacturer: Manufacturer
     @Binding var isOnboarding: Bool
     
-    @State private var selectedLens: CameraLens? = nil
+    var modelContext: ModelContext
     
+    @State private var selectedLens: CameraLens? = nil
+        
     var body: some View {
         VStack(spacing: 5) {
             CameraItemListView(
@@ -22,6 +25,7 @@ struct CameraLensSelectionView: View {
                 label: { $0.name }
             )
             CustomActiveButton(title: "완료", action: {
+                modelContext.insert(selectedLens!)
                 isOnboarding = false
             }, isEnabled: selectedLens != nil)
             .padding(.horizontal, 16)
