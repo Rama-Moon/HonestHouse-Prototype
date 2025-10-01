@@ -15,61 +15,111 @@ struct ExposureDetailView: View {
     
     var body: some View {
         ZStack {
-            Color.clear.ignoresSafeArea()
+            Color.black.opacity(0.2).ignoresSafeArea()
             
             VStack(spacing: 18) {
                 VStack(spacing: 18) {
                     HStack {
                         Text("\(mode)")
-                            .font(.title)
+                            .font(.system(size: 24, weight: .semibold))
                          
                         Spacer()
                         
                         Button {
                             showDetailValue = false
                         } label: {
-                            Image(systemName: "xmark.circle.fill")
+                            Image(systemName: "xmark")
                                 .frame(width: 30, height: 30)
-                                .foregroundStyle(Color.white)
+                                .foregroundStyle(Color.black)
                         }
                     }
                     
                     HStack() {
                         Text("F:")
-                        Text("5.6").valueChipStyle()
-                        Text("-").valueChipStyle()
-                        Text("5.6").valueChipStyle()
+                            .font(.system(size: 20, weight: .semibold))
+                        Text("5.6")
+                            .font(.system(size: 16, weight: .medium, design: .monospaced))
+                            .foregroundStyle(.hhcolor(color: .text(.white)))
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(.hhcolor(color: .buttonBackground(.primary)))
+                            )
+                        Text("-")
+                            .font(.system(size: 16, weight: .medium, design: .monospaced))
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(.hhcolor(color: .buttonBackground(.disabled)))
+                            )
+                        Text("11")
+                            .font(.system(size: 16, weight: .medium, design: .monospaced))
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(.hhcolor(color: .buttonBackground(.disabled)))
+                            )
                         Spacer()
                     }
                     
                     HStack {
                         Text("S:")
-                        Text("1/100").valueChipStyle()
+                            .font(.system(size: 20, weight: .semibold))
+                        Text("1/100")
+                            .font(.system(size: 16, weight: .medium, design: .monospaced))
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(.hhcolor(color: .buttonBackground(.disabled)))
+                            )
                         Spacer()
                     }
                     
                     HStack {
                         Text("ISO:")
-                        Text("100").valueChipStyle()
+                            .font(.system(size: 20, weight: .semibold))
+                        Text("100")
+                            .font(.system(size: 16, weight: .medium, design: .monospaced))
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(.hhcolor(color: .buttonBackground(.disabled)))
+                            )
                         Spacer()
                     }
                     
                     HStack {
                         Text("EV:")
-                        Text("\(ev, specifier: "%.2f")").valueChipStyle()
+                            .font(.system(size: 20, weight: .semibold))
+                        Text("\(ev, specifier: "%.2f")")
+                            .font(.system(size: 16, weight: .medium, design: .monospaced))
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(.hhcolor(color: .buttonBackground(.disabled)))
+                            )
                         Spacer()
                     }
                 }
                 
-                VStack(spacing: 6) {
+                VStack(alignment:.leading, spacing: 6) {
                     Text("Why This Setting")
+                        .font(.system(size: 16, weight: .semibold))
                     Text("\(response)")
+                        .font(.system(size: 16, weight: .regular, design: .monospaced))
                         .lineLimit(nil)
                 }
             }
             .padding(22)
-            .background(Color.black)
+            .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 20))
+            .padding(.horizontal, 16)
         }
     }
 }

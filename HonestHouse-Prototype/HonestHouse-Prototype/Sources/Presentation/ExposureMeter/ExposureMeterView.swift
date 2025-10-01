@@ -82,7 +82,7 @@ struct ExposureMeterView: View {
                     response: $response,
                     showDetailValue: $showDetailValue
                 )
-                .padding(16)
+                .ignoresSafeArea()
             }
         }
         .navigationBarBackButtonHidden(true)
