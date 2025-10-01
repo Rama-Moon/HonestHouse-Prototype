@@ -11,7 +11,7 @@ import SwiftUI
 final class ExposureManager {
     
     // MARK: - 실제 사용 함수
-    public func recommendExposure(
+    public static func recommendExposure(
         body: CameraBody,
         lens: CameraLens,
         intent: Intent,
@@ -20,7 +20,11 @@ final class ExposureManager {
         isNight: Bool,
         isBacklight: Bool,
         evBacklightBias: Double = 0.7
-    ) -> (recomMode: CameraMode, base: ExposureSetting, spectrum: [ExposureSetting]) {
+    ) -> (
+        recomMode: CameraMode,
+        base: ExposureSetting,
+        spectrum: [ExposureSetting]
+    ) {
         
         let evEff: Double
         
@@ -52,7 +56,7 @@ final class ExposureManager {
     
     // MARK: - 내부 로직 함수
     // 모드에 따른 전략 매핑
-    private func strategyForSubtype(_ subtype: ModeSubtype) -> ModeStrategy {
+    private static func strategyForSubtype(_ subtype: ModeSubtype) -> ModeStrategy {
         switch subtype {
         case .M1: return M1Strategy()
         case .M2: return M2Strategy()
@@ -64,7 +68,7 @@ final class ExposureManager {
     }
     
     // 모드 결정
-    private func decideModeSubtype(intent: Intent, isNight: Bool) -> ModeSubtype {
+    private static func decideModeSubtype(intent: Intent, isNight: Bool) -> ModeSubtype {
         for rule in rules {
             if (rule.place == intent.place) &&
                (rule.subject == intent.subject) &&
@@ -78,7 +82,7 @@ final class ExposureManager {
     }
     
     // ISO 보정
-    private func applyIsoCorrection(
+    private static func applyIsoCorrection(
         setting: ExposureSetting,
         ev100: Double,
         isoCap: Int

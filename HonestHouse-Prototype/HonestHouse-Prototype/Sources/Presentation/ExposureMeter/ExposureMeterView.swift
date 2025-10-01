@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 enum CameraMode {
     case AMode
@@ -35,6 +36,13 @@ struct ExposureMeterView: View {
     @State private var response = ""
     @State private var isLoading = false
     @State private var isBacklit = false
+    
+    @State private var recommendedMode: CameraMode = .MMode
+    @State private var baseExposure: ExposureSetting?
+    @State private var exposureSpectrum: [ExposureSetting] = []
+    
+    @Query private var savedBodies: [CameraBody]
+    @Query private var savedLenses: [CameraLens]
     
     let inputIntent: Intent
     
@@ -86,7 +94,44 @@ struct ExposureMeterView: View {
                 .ignoresSafeArea()
             }
         }
+        .onAppear {
+            updateExposureSettings()
+        }
+
+        .onChange(of: ev) { oldValue, newValue in
+            updateExposureSettings()
+        }
         .navigationBarBackButtonHidden(true)
+    }
+    
+    private func updateExposureSettings() {
+        guard let body = savedBodies.first,
+              let lens = savedLenses.first else {
+            return
+        }
+        
+        let result = ExposureManager.recommendExposure(
+            body: body,
+            lens: lens,
+            intent: inputIntent,
+            ev100: ev,
+            isoCap: 20000,
+            isNight: false,
+            isBacklight: isBacklit
+        )
+        
+        recommendedMode = result.recomMode
+        baseExposure = result.base
+        exposureSpectrum = result.spectrum
+        mode = result.recomMode.title
+    }
+    
+    func formatShutterSpeed(_ shutter: Double) -> String {
+        if shutter >= 1 {
+            return "\(Int(shutter))\""
+        } else {
+            return "1/\(Int(round(1/shutter)))"
+        }
     }
     
     func exposureValueDisplay() -> some View {
@@ -113,7 +158,7 @@ struct ExposureMeterView: View {
             HStack() {
                 Text("F:")
                     .font(.system(size: 20, weight: .semibold))
-                Text("5.6")
+                Text("\(baseExposure?.aperture ?? 0.0, specifier: "%.2f")")
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 2)
@@ -124,7 +169,7 @@ struct ExposureMeterView: View {
                 Spacer()
                 Text("S:")
                     .font(.system(size: 20, weight: .semibold))
-                Text("1/100")
+                Text(formatShutterSpeed(baseExposure?.shutter ?? 0.01))
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 2)
@@ -135,7 +180,7 @@ struct ExposureMeterView: View {
                 Spacer()
                 Text("ISO:")
                     .font(.system(size: 20, weight: .semibold))
-                Text("100")
+                Text("\(baseExposure?.iso ?? 0) ")
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 2)
