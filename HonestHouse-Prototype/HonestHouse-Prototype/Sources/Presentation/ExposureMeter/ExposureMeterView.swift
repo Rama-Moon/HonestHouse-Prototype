@@ -30,7 +30,9 @@ struct ExposureMeterView: View {
     @State private var isStabilized: Bool = false
     @State private var showDetailValue: Bool = false
     
-    // 입력된 의도
+    @State private var response = ""
+    @State private var isLoading = false
+    
     let inputIntent: Intent
     
     var body: some View {
@@ -44,25 +46,32 @@ struct ExposureMeterView: View {
                     isStabilized = false
                 }
             )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             
             VStack {
-                exposureValueDisplay()
-                    .padding(16)
+                if !showDetailValue {
+                    exposureValueDisplay()
+                        .padding(16)
+                }
                 
                 Spacer()
                 
                 exposureLockButton()
             }
         }
-        .sheet(isPresented: $showDetailValue) {
-            Text("EV 안정화됨!")
-        }
-        .onChange(of: isStabilized) {
-            print("\(isStabilized)")
+        .overlay {
+            if showDetailValue {
+                ExposureDetailView(
+                    ev: $ev,
+                    mode: $mode,
+                    response: $response,
+                    showDetailValue: $showDetailValue
+                )
+                .padding(16)
+            }
         }
     }
-        
+    
     func exposureValueDisplay() -> some View {
         VStack(spacing: 18) {
             Text("\(mode)")
@@ -101,7 +110,10 @@ struct ExposureMeterView: View {
     
     func exposureLockButton() -> some View {
         Button(action: {
-            showDetailValue = true
+            Task {
+                await sendRequest()
+                showDetailValue = true
+            }
         }) {
             ZStack {
                 Circle()
@@ -116,5 +128,30 @@ struct ExposureMeterView: View {
             }
         }
         .disabled(!isStabilized)
+    }
+    
+    private func sendRequest() async {
+        isLoading = true
+        
+        let userInput =
+        """
+        현재 Exposure Value인 \(ev)값과 조리개, 셔터스피드, ISO 값이 왜 이렇게 설정됐는지 설명
+        """
+        
+        Task {
+            do {
+                var messages = PromptManager.createPhotographyAssistant(
+                    A: 8.0,
+                    SS: 1/125,
+                    ISO: 100
+                )
+                messages.append(ChatMessage(role: "user", content: userInput))
+                let result = try await OpenAIService().sendMessage(messages: messages)
+                response = result
+            } catch {
+                response = "Error: \(error.localizedDescription)"
+            }
+            isLoading = false
+        }
     }
 }
