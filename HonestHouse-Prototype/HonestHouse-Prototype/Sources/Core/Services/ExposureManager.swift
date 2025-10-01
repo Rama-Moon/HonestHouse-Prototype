@@ -20,7 +20,7 @@ final class ExposureManager {
         isNight: Bool,
         isBacklight: Bool,
         evBacklightBias: Double = 0.7
-    ) -> (subtype: ModeSubtype, base: ExposureSetting, spectrum: [ExposureSetting]) {
+    ) -> (recomMode: CameraMode, base: ExposureSetting, spectrum: [ExposureSetting]) {
         
         let evEff: Double
         
@@ -33,6 +33,7 @@ final class ExposureManager {
         
         // 1. 추천 모드 결정
         let subtype = decideModeSubtype(intent: intent, isNight: isNight)
+        let recomMode = subtype.parentMode
         
         // 2. 모드에 맞는 전략 선택
         let strategy = strategyForSubtype(subtype)
@@ -46,7 +47,7 @@ final class ExposureManager {
         // 스펙트럼 생성
         let spectrum = strategy.generateSpectrum(ev100: evEff, lens: lens, body: body, isoCap: isoCap)
         
-        return (subtype, base, spectrum)
+        return (recomMode, base, spectrum)
     }
     
     // MARK: - 내부 로직 함수
