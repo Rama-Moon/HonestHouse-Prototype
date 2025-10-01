@@ -25,6 +25,7 @@ class ExposureMeterUIView: UIView {
     var onUnstabilized: (() -> Void)?
     
     private var isCurrentlyStabilized = false
+    private var isPaused = false
     
     private var evHistory: [(value: Double, timestamp: Date)] = []
     private let stabilizationThreshold: Double = 1.0

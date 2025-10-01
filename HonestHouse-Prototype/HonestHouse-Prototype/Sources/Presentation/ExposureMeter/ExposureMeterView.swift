@@ -47,7 +47,8 @@ struct ExposureMeterView: View {
                 },
                 onUnstabilized: {
                     isStabilized = false
-                }
+                },
+                isPaused: $showDetailValue
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea(.all, edges: .all)
