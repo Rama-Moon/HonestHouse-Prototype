@@ -11,13 +11,13 @@ class OpenAIService {
     private let session = URLSession.shared
     
     func sendMessage(messages: [ChatMessage]) async throws -> String {
-        guard let url = URL(string: OpenAIConfig.baseURL) else {
+        guard let url = URL(string: Bundle.main.apiBaseURL) else {
             throw APIError.invalidURL
         }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.addValue("Bearer \(OpenAIConfig.apiKey)", forHTTPHeaderField: "Authorization")
+        request.addValue("Bearer \(Bundle.main.apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let requestBody = ChatRequest(
