@@ -23,6 +23,11 @@ struct SolarRotationView: View {
             Circle().stroke(Color.white.opacity(0.5), lineWidth: 5).frame(width: 107, height: 107)
             Image(.sun)
                 .padding(.top, -25)
+                // 해가 떠있을 때만 태양 이미지가 보이도록
+                if solar.status.isSunUp {
+                    Image(.sun)
+                        .padding(.top, -25)
+                }
         }
         .rotationEffect(.degrees(relativeBearing))
         .animation(.easeInOut(duration: 0.12), value: relativeBearing)
