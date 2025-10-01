@@ -16,11 +16,10 @@ class CameraLens: Identifiable, Equatable {
     let minOpenAperture: Double = 16.0 // 최소 조리개 - N_max
     let focalLength: Double
     
-    init(id: UUID = UUID(), name: String, maxOpenAperture: Double, minOpenAperture: Double, focalLength: Double) {
+    init(id: UUID = UUID(), name: String, maxOpenAperture: Double, focalLength: Double) {
         self.id = id
         self.name = name
         self.maxOpenAperture = maxOpenAperture
-        self.minOpenAperture = minOpenAperture
         self.focalLength = focalLength
     }
 }
