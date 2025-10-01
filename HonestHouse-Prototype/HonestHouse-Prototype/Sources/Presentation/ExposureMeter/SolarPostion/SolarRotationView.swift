@@ -14,24 +14,30 @@ struct SolarRotationView: View {
     @StateObject private var locationProvider = LocationProvider()
     
     @State private var relativeBearing: Double = 0.0
+    @Binding var isBacklit: Bool
     
     private let refreshInterval: TimeInterval = 600.0
     @State private var timerCancellable: AnyCancellable?
     
     var body: some View {
         ZStack(alignment: .top) {
-            Circle().stroke(Color.white.opacity(0.5), lineWidth: 5).frame(width: 107, height: 107)
-            Image(.sun)
-                .padding(.top, -25)
+            // 역광인 경우에만 역광 가이드 이미지가 보이도록
+            if isBacklit {
+                Image(.backlitGuide)
+                    .frame(width: 75)
+                    .transition(.opacity)
+            }
+            ZStack(alignment: .top) {
+                Circle().stroke(Color.white.opacity(0.5), lineWidth: 5).frame(width: 107, height: 107)
                 // 해가 떠있을 때만 태양 이미지가 보이도록
                 if solar.status.isSunUp {
                     Image(.sun)
                         .padding(.top, -25)
                 }
+            }
+            .rotationEffect(.degrees(relativeBearing))
+            .animation(.easeInOut(duration: 0.12), value: relativeBearing)
         }
-        .rotationEffect(.degrees(relativeBearing))
-        .animation(.easeInOut(duration: 0.12), value: relativeBearing)
-        
         .onAppear {
             heading.start()
             startTimer()
