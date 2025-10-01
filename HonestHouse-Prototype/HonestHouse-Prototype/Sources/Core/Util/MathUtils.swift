@@ -21,6 +21,3 @@ func clamp(_ x: Double, min lo: Double, max hi: Double) -> Double {
 func handHoldLimit(focalLength: Double, cropFactor: Double) -> Double {
     return 1.0 / (focalLength * cropFactor)
 }
-
-let kApertureThirdStopFactor = pow(2.0, 1.0/6.0) // f 넘버 1/3스톱
-let kShutterThirdStopFactor  = pow(2.0, 1.0/3.0) // 셔터 1/3스톱
