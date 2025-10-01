@@ -8,72 +8,55 @@
 import SwiftUI
 
 struct CaseSelectView: View {
-    // 선택된 의도들
-    @State private var selectedPlace: Place? = nil
-    @State private var selectedSubject: Subject? = nil
-    @State private var selectedMovement: Movements? = nil
-    @State private var selectedDOF: DOF? = nil
-    
-    var allSelectionsMade: Bool {
-        guard selectedPlace != nil,
-              selectedSubject != nil
-        else {
-            return false
-        }
-
-        if selectedSubject == .scenery {
-            return true
-        } else {
-            return selectedMovement != nil && selectedDOF != nil
-        }
-    }
+    @Bindable var viewModel: CaseSelectViewModel = .init()
+    @State private var goToMetering: Bool = false
     
     var body: some View {
-        VStack(alignment: .leading) {
-            RadioButtonGroup(title: "장소", options: Place.allCases, isEnabled: true, selected: $selectedPlace)
+        NavigationStack {
+            VStack(alignment: .leading) {
+                ForEach(Array(Case.allCases.enumerated()), id: \.element) { index, section in
+                    
+                    renderRadioSection(for: section)
+                    
+                    if index < Case.allCases.count - 1 {
+                        Spacer()
+                        Divider()
+                        Spacer()
+                    }
+                }
+                
+                Spacer()
+                
+                CustomActiveButton(title: "완료", action: {
+                    goToMetering = true
+                }, isEnabled: viewModel.allSelectionsMade)
+            }
+            .padding()
+            .navigationDestination(isPresented: $goToMetering, destination: {
+                ExposureMeterView(inputIntent: viewModel.intent)
+            })
+            .navigationTitle("Case")
+            .navigationBarTitleDisplayMode(.large)
+        }
+    }
+    
+    @ViewBuilder
+    func renderRadioSection(for section: Case) -> some View {
+        switch section {
+        case .place:
+            RadioButtonGroup(title: section.rawValue, options: Place.allCases, isEnabled: true, selected: $viewModel.intent.place)
             
-            Spacer()
-            Divider()
-            Spacer()
-
-            RadioButtonGroup(title: "피사체", options: Subject.allCases, isEnabled: true, selected: $selectedSubject)
-                .onChange(of: selectedSubject) { _, _ in
-                    selectedMovement = nil
-                    selectedDOF = nil
+        case .subject:
+            RadioButtonGroup(title: section.rawValue, options: Subject.allCases, isEnabled: true, selected: $viewModel.intent.subject)
+                .onChange(of: viewModel.intent.subject) { _, _ in
+                    viewModel.resetAfterSubjectChange()
                 }
             
-            Spacer()
-            Divider()
-            Spacer()
+        case .movements:
+            RadioButtonGroup(title: section.rawValue, options: Movements.allCases, isEnabled: viewModel.intent.subject != .scenery, selected: $viewModel.intent.movement)
             
-            RadioButtonGroup(
-                title: "움직임",
-                options: Movements.allCases,
-                isEnabled: selectedSubject != .scenery,
-                selected: $selectedMovement
-            )
-            
-            Spacer()
-            Divider()
-            Spacer()
-
-            RadioButtonGroup(
-                title: "아웃포커싱",
-                options: DOF.allCases,
-                isEnabled: selectedSubject != .scenery,
-                selected: $selectedDOF
-            )
-
-            Spacer()
-
-            CustomActiveButton(title: "완료", action: {
-                print("완료 클릭")
-            }, isEnabled: allSelectionsMade)
+        case .dof:
+            RadioButtonGroup(title: section.rawValue, options: DOF.allCases, isEnabled: viewModel.intent.subject != .scenery, selected: $viewModel.intent.dof)
         }
-        .padding()
     }
-}
-
-#Preview {
-    CaseSelectView()
 }
