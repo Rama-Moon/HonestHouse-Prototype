@@ -26,9 +26,9 @@ final class ExposureManager {
         
         // 역광일 때, EV 보정
         if isBacklight {
-            let evEff = ev100 - evBacklightBias
+            evEff = ev100 - evBacklightBias
         } else {
-            let evEff = ev100
+            evEff = ev100
         }
         
         // 1. 추천 모드 결정
