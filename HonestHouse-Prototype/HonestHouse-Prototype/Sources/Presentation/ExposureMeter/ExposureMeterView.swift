@@ -102,6 +102,7 @@ struct ExposureMeterView: View {
                 ExposureDetailView(
                     ev: $ev,
                     mode: $mode,
+                    spectrum: $exposureSpectrum,
                     response: $response,
                     showDetailValue: $showDetailValue
                 )
@@ -111,7 +112,6 @@ struct ExposureMeterView: View {
         .onAppear {
             updateExposureSettings()
         }
-        
         .onChange(of: ev) { oldValue, newValue in
             updateExposureSettings()
         }
@@ -228,7 +228,8 @@ struct ExposureMeterView: View {
     func exposureLockButton() -> some View {
         Button(action: {
             Task {
-                await sendRequest()
+//                await sendRequest()
+                getDescription(for: inputIntent)
                 showDetailValue = true
             }
         }) {
@@ -248,7 +249,7 @@ struct ExposureMeterView: View {
         
         let userInput =
         """
-        현재 Exposure Value인 \(ev)값과 조리개, 셔터스피드, ISO 값이 왜 이렇게 설정됐는지 설명
+        Hello, GPT
         """
         
         Task {
@@ -266,5 +267,9 @@ struct ExposureMeterView: View {
             }
             isLoading = false
         }
+    }
+    
+    func getDescription(for intent: Intent) {
+        response = Guiding.from(intent)?.description ?? ""
     }
 }
