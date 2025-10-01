@@ -13,9 +13,6 @@ struct Exposure {
     let exposureDuration: Double
     let aperture: Float
     let ev: Double
-    let bias: Float
-    let offset: Float
-    let mode: AVCaptureDevice.ExposureMode
 }
 
 class ExposureMeterUIView: UIView {
@@ -24,6 +21,14 @@ class ExposureMeterUIView: UIView {
     private var device: AVCaptureDevice?
     
     var onExposureValueUpdate: ((Exposure) -> Void)?
+    var onStabilized: (() -> Void)?
+    var onUnstabilized: (() -> Void)?
+    
+    private var isCurrentlyStabilized = false
+    
+    private var evHistory: [(value: Double, timestamp: Date)] = []
+    private let stabilizationThreshold: Double = 1.0
+    private let stabilizationDuration: TimeInterval = 3.0
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -98,8 +103,10 @@ class ExposureMeterUIView: UIView {
             self.session.startRunning()
         }
         
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            self.readExposureValues()
+        DispatchQueue.main.async {
+            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+                self.readExposureValues()
+            }
         }
     }
     
@@ -108,9 +115,6 @@ class ExposureMeterUIView: UIView {
         
         let iso = device.iso
         let exposure = device.exposureDuration.seconds
-        let bias = device.exposureTargetBias
-        let offset = device.exposureTargetOffset
-        let mode = device.exposureMode
         let aperture = device.lensAperture
         
         let ev: Double
@@ -125,12 +129,47 @@ class ExposureMeterUIView: UIView {
             iso: iso,
             exposureDuration: exposure,
             aperture: aperture,
-            ev: ev,
-            bias: bias,
-            offset: offset,
-            mode: mode
+            ev: ev
         )
 
         onExposureValueUpdate?(exposureValue)
+        checkStabilization(ev: ev)
+    }
+    
+    private func checkStabilization(ev: Double) {
+        let now = Date()
+        
+        evHistory.append((value: ev, timestamp: now))
+        
+        evHistory.removeAll { now.timeIntervalSince($0.timestamp) > stabilizationDuration }
+        
+        guard evHistory.count >= 5 else {
+            if isCurrentlyStabilized {
+                isCurrentlyStabilized = false
+                onUnstabilized?()
+            }
+            return
+        }
+        
+        let values = evHistory.map { $0.value }
+        
+        guard let minEV = values.min(),
+              let maxEV = values.max() else {
+            return
+        }
+        
+        let diff = maxEV - minEV
+        
+        if diff <= stabilizationThreshold {
+            if !isCurrentlyStabilized {
+                isCurrentlyStabilized = true
+                onStabilized?()
+            }
+        } else {
+            if isCurrentlyStabilized {
+                isCurrentlyStabilized = false
+                onUnstabilized?()
+            }
+        }
     }
 }
