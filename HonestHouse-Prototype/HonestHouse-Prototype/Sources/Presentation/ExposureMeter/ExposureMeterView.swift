@@ -83,6 +83,7 @@ struct ExposureMeterView: View {
                 .padding(16)
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
     
     func exposureValueDisplay() -> some View {
