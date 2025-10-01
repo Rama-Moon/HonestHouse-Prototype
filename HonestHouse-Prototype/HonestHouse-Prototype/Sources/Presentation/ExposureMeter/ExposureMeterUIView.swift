@@ -31,6 +31,8 @@ class ExposureMeterUIView: UIView {
     private let stabilizationThreshold: Double = 1.0
     private let stabilizationDuration: TimeInterval = 3.0
     
+    private var readTimer: Timer?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -99,6 +101,7 @@ class ExposureMeterUIView: UIView {
         }
         
         session.commitConfiguration()
+        resume()
         
         DispatchQueue.global(qos: .background).async {
             self.session.startRunning()
@@ -111,8 +114,21 @@ class ExposureMeterUIView: UIView {
         }
     }
     
+    private func startReadingEV() {
+        stopReadingEV()
+        readTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.readExposureValues()
+        }
+        RunLoop.main.add(readTimer!, forMode: .common)
+    }
+    
+    private func stopReadingEV() {
+        readTimer?.invalidate()
+                readTimer = nil
+    }
+    
     private func readExposureValues() {
-        guard let device = device else { return }
+        guard !isPaused, let device = device else { return }
         
         let iso = device.iso
         let exposure = device.exposureDuration.seconds
@@ -172,5 +188,31 @@ class ExposureMeterUIView: UIView {
                 onUnstabilized?()
             }
         }
+    }
+    
+    func setPaused(_ paused: Bool) {
+        guard paused != isPaused else { return }
+        isPaused = paused
+        if paused {
+            pause()
+        } else {
+            resume()
+        }
+    }
+    
+    private func pause() {
+        previewLayer?.connection?.isEnabled = false
+        stopReadingEV()
+        if session.isRunning {
+            DispatchQueue.global(qos: .background).async { self.session.stopRunning() }
+        }
+    }
+    
+    private func resume() {
+        if !session.isRunning {
+            DispatchQueue.global(qos: .background).async { self.session.startRunning() }
+        }
+        previewLayer?.connection?.isEnabled = true
+        startReadingEV()
     }
 }
