@@ -20,11 +20,13 @@ struct CameraItemListView<Item: Identifiable & Equatable>: View {
                     Button {
                         selectedItem = item
                     } label: {
-                        Text(label(item))
-                            .foregroundColor(selectedItem == item ? .hhcolor(.text(.white)) : .hhcolor(.text(.primary)))
-                            .font(.body)
+                        HStack {
+                            Text(label(item))
+                                .foregroundColor(selectedItem == item ? .hhcolor(.text(.white)) : .hhcolor(.text(.primary)))
+                                .font(.body)
+                            Spacer()
+                        }
                     }
-                    .buttonStyle(.plain)
                     .listRowBackground((selectedItem == item ? .hhcolor(.buttonBackground(.primary)) : Color.clear))
                 }
             }
