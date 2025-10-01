@@ -25,37 +25,50 @@ enum CameraMode {
 }
 
 struct ExposureMeterView: View {
-    @State private var iso: Float = 0
-    @State private var exposureDuration: Double = 0
-    @State private var aperture: Float = 0
     @State private var ev: Double = 0
-    @State private var bias: Float = 0
-    @State private var offset: Float = 0
-    @State private var mode: String = "AMode"
+    @State private var mode: String = "A Mode"
+    @State private var isStabilized: Bool = false
+    @State private var showDetailValue: Bool = false
     
-    // 입력된 의도
+    @State private var response = ""
+    @State private var isLoading = false
+    
     let inputIntent: Intent
     
     var body: some View {
         ZStack {
             ExposureMeterRepersentable(
-                iso: $iso,
-                exposureDuration: $exposureDuration,
-                aperture: $aperture,
                 ev: $ev,
-                bias: $bias,
-                offset: $offset
+                onStabilized: {
+                    isStabilized = true
+                },
+                onUnstabilized: {
+                    isStabilized = false
+                }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             
             VStack {
-                exposureValueDisplay()
-                    
-                    .padding(16)
+                if !showDetailValue {
+                    exposureValueDisplay()
+                        .padding(16)
+                }
                 
                 Spacer()
+                
+                exposureLockButton()
             }
-            
+        }
+        .overlay {
+            if showDetailValue {
+                ExposureDetailView(
+                    ev: $ev,
+                    mode: $mode,
+                    response: $response,
+                    showDetailValue: $showDetailValue
+                )
+                .padding(16)
+            }
         }
     }
     
@@ -65,29 +78,80 @@ struct ExposureMeterView: View {
                 .font(.title)
                 .foregroundStyle(.black)
             
-            HStack {
+            HStack() {
                 Text("F:")
                 Text("5.6").valueChipStyle()
+                Spacer()
             }
             
             HStack {
                 Text("S:")
                 Text("1/100").valueChipStyle()
+                Spacer()
             }
             
             HStack {
                 Text("ISO:")
                 Text("100").valueChipStyle()
+                Spacer()
             }
             
             HStack {
                 Text("EV:")
-                Text("8.5").valueChipStyle()
+                Text("\(ev, specifier: "%.2f")").valueChipStyle()
+                Spacer()
             }
         }
         .padding(22)
         .frame(maxWidth: .infinity)
         .background(Color.white.opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+    
+    func exposureLockButton() -> some View {
+        Button(action: {
+            Task {
+                await sendRequest()
+                showDetailValue = true
+            }
+        }) {
+            ZStack {
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 72, height: 72)
+                
+                Image(systemName: isStabilized ? "lock.open.fill" : "lock.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
+                    .foregroundColor(isStabilized ? .green : .black)
+            }
+        }
+        .disabled(!isStabilized)
+    }
+    
+    private func sendRequest() async {
+        isLoading = true
+        
+        let userInput =
+        """
+        현재 Exposure Value인 \(ev)값과 조리개, 셔터스피드, ISO 값이 왜 이렇게 설정됐는지 설명
+        """
+        
+        Task {
+            do {
+                var messages = PromptManager.createPhotographyAssistant(
+                    A: 8.0,
+                    SS: 1/125,
+                    ISO: 100
+                )
+                messages.append(ChatMessage(role: "user", content: userInput))
+                let result = try await OpenAIService().sendMessage(messages: messages)
+                response = result
+            } catch {
+                response = "Error: \(error.localizedDescription)"
+            }
+            isLoading = false
+        }
     }
 }
