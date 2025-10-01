@@ -25,6 +25,8 @@ enum CameraMode {
 }
 
 struct ExposureMeterView: View {
+    @Environment(\.dismiss) var dismiss
+    
     @State private var ev: Double = 0
     @State private var mode: String = "A Mode"
     @State private var isStabilized: Bool = false
@@ -56,7 +58,17 @@ struct ExposureMeterView: View {
                 
                 Spacer()
                 
-                exposureLockButton()
+                ZStack(alignment: .center) {
+                    exposureLockButton()
+                    if !showDetailValue {
+                        HStack {
+                            exitButton()
+                                .padding(.leading, 40)
+                            Spacer()
+                        }
+                    }
+                }
+                .safeAreaPadding(.bottom, 10)
             }
         }
         .overlay {
@@ -106,6 +118,14 @@ struct ExposureMeterView: View {
         .frame(maxWidth: .infinity)
         .background(Color.white.opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+    
+    func exitButton() -> some View {
+        Button {
+            dismiss()
+        } label: {
+            Image(.exitButton)
+        }
     }
     
     func exposureLockButton() -> some View {
