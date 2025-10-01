@@ -40,7 +40,7 @@ struct ExposureMeterView: View {
     
     var body: some View {
         ZStack {
-            ExposureMeterRepersentable(
+            ExposureMeterRepresentable(
                 ev: $ev,
                 onStabilized: {
                     isStabilized = true
