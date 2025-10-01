@@ -12,4 +12,5 @@ struct CameraBody: Identifiable, Equatable {
     let name: String
     let fastestShutterSpeed: Double // 초 단위 (1/8000s → 0.000125)
     let slowestShutterSpeed: Double // 초 단위 (30s → 30.0)
+    let cropFactor: Double
 }

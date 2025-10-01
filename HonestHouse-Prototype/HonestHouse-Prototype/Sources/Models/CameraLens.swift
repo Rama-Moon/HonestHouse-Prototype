@@ -11,4 +11,6 @@ struct CameraLens: Identifiable, Equatable {
     var id = UUID()
     let name: String
     let maxOpenAperture: Float
+    let minOpenAperture: Float = 16.0
+    let focalLength: Double
 }
