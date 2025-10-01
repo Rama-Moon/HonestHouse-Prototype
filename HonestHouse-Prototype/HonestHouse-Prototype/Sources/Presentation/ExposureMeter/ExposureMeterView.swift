@@ -44,6 +44,20 @@ struct ExposureMeterView: View {
     @Query private var savedBodies: [CameraBody]
     @Query private var savedLenses: [CameraLens]
     
+    var apertureDisplay: String {
+        if recommendedMode == .SMode {
+            return "Auto"
+        }
+        return String(format: "%.2f", baseExposure?.aperture ?? 0.0)
+    }
+    
+    var shutterDisplay: String {
+        if recommendedMode == .AMode {
+            return "Auto"
+        }
+        return String(formatShutterSpeed(baseExposure?.shutter ?? 0.01))
+    }
+    
     let inputIntent: Intent
     
     var body: some View {
@@ -97,7 +111,7 @@ struct ExposureMeterView: View {
         .onAppear {
             updateExposureSettings()
         }
-
+        
         .onChange(of: ev) { oldValue, newValue in
             updateExposureSettings()
         }
@@ -158,35 +172,42 @@ struct ExposureMeterView: View {
             HStack() {
                 Text("F:")
                     .font(.system(size: 20, weight: .semibold))
-                Text("\(baseExposure?.aperture ?? 0.0, specifier: "%.2f")")
+                
+                Text(apertureDisplay)
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill([.AMode, .MMode].contains(recommendedMode) ? Color.white : Color.white.opacity(0.5))
+                    )
+                
+                Spacer()
+                
+                Text("S:")
+                    .font(.system(size: 20, weight: .semibold))
+                
+                Text(shutterDisplay)
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill([.SMode, .MMode].contains(recommendedMode) ? Color.white : Color.white.opacity(0.5))
+                    )
+                     
+                     Spacer()
+                     
+                     Text("ISO:")
+                    .font(.system(size: 20, weight: .semibold))
+                     
+                     Text("\(baseExposure?.iso ?? 0)")
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 2)
                     .background(
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.white)
-                    )
-                Spacer()
-                Text("S:")
-                    .font(.system(size: 20, weight: .semibold))
-                Text(formatShutterSpeed(baseExposure?.shutter ?? 0.01))
-                    .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 2)
-                    .background(
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.white.opacity(0.5))
-                    )
-                Spacer()
-                Text("ISO:")
-                    .font(.system(size: 20, weight: .semibold))
-                Text("\(baseExposure?.iso ?? 0) ")
-                    .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 2)
-                    .background(
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.white.opacity(0.5))
                     )
             }
         }
