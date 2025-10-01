@@ -40,14 +40,14 @@ struct SolarRotationView: View {
             if let coordinate = newCoordinate {
                 solar.updateCoordinates(latitude: coordinate.latitude, longitude: coordinate.longitude)
                 _ = solar.refresh()
-                updateRelativeBearing()
+                updateRelativeValues()
             }
         }
         .onChange(of: heading.headingInDegrees) {
-            updateRelativeBearing()
+            updateRelativeValues()
         }
         .onChange(of: solar.azimuth) {
-            updateRelativeBearing()
+            updateRelativeValues()
         }
     }
     
@@ -56,14 +56,17 @@ struct SolarRotationView: View {
             .autoconnect()
             .sink { _ in
                 _ = solar.refresh()
-                updateRelativeBearing()
+                updateRelativeValues()
             }
     }
     
-    private func updateRelativeBearing() {
-        guard let sunAzimuth = solar.azimuth else { return }
+    private func updateRelativeValues() {
+        guard let sunAzimuth = solar.azimuth, let sunElevation = solar.elevation else { return }
         let deviceHeading = heading.headingInDegrees
         relativeBearing = signedAngleDelta(from: deviceHeading, to: sunAzimuth)
+        isBacklit = checkBacklit(relativeBearing: relativeBearing, sunElevation: sunElevation, currentState: isBacklit)
+    }
+    
     private func checkBacklit(relativeBearing: Double, sunElevation: Double, currentState: Bool) -> Bool {
         guard sunElevation > -0.833 else { return false }
         let bearingAbs = abs(relativeBearing)
