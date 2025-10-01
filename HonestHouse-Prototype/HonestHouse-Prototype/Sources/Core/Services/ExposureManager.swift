@@ -65,9 +65,9 @@ final class ExposureManager {
     // 모드 결정
     private func decideModeSubtype(intent: Intent, isNight: Bool) -> ModeSubtype {
         for rule in rules {
-            if (rule.place == intent.place || rule.place.isEmpty) &&
-               (rule.subject == intent.subject || rule.subject.isEmpty) &&
-               (rule.motion == intent.motion || rule.motion.isEmpty) &&
+            if (rule.place == intent.place) &&
+               (rule.subject == intent.subject) &&
+               (rule.motion == intent.movement || rule.motion == nil) &&
                (rule.dof == nil || rule.dof == intent.dof) &&
                (rule.night == nil || rule.night == isNight) {
                 return rule.result

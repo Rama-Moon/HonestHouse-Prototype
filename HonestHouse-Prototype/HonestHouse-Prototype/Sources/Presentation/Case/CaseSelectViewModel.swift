@@ -13,28 +13,14 @@ import SwiftUI
 
 @Observable
 class CaseSelectViewModel {
-    var selectedPlace: Place? = nil
-    var selectedSubject: Subject? = nil
-    var selectedMovement: Movements? = nil
-    var selectedDOF: DOF? = nil
-
+    var intent = Intent()
+    
     var allSelectionsMade: Bool {
-        guard selectedPlace != nil,
-              selectedSubject != nil
-        else {
-            return false
-        }
-
-        if selectedSubject == .scenery {
-            return true
-        } else {
-            return selectedMovement != nil && selectedDOF != nil
-        }
+        intent.allSelectionsMade
     }
-
+    
     func resetAfterSubjectChange() {
-        selectedMovement = nil
-        selectedDOF = nil
+        intent.resetAfterSubjectChange()
     }
 }
 

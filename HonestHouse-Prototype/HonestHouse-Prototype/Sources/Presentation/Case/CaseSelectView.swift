@@ -33,7 +33,7 @@ struct CaseSelectView: View {
             }
             .padding()
             .navigationDestination(isPresented: $goToMetering, destination: {
-                ExposureMeterView()
+                ExposureMeterView(inputIntent: viewModel.intent)
             })
             .navigationTitle("Case")
             .navigationBarTitleDisplayMode(.large)
@@ -44,19 +44,19 @@ struct CaseSelectView: View {
     func renderRadioSection(for section: Case) -> some View {
         switch section {
         case .place:
-            RadioButtonGroup(title: section.rawValue, options: Place.allCases, isEnabled: true, selected: $viewModel.selectedPlace)
+            RadioButtonGroup(title: section.rawValue, options: Place.allCases, isEnabled: true, selected: $viewModel.intent.place)
             
         case .subject:
-            RadioButtonGroup(title: section.rawValue, options: Subject.allCases, isEnabled: true, selected: $viewModel.selectedSubject)
-                .onChange(of: viewModel.selectedSubject) { _, _ in
+            RadioButtonGroup(title: section.rawValue, options: Subject.allCases, isEnabled: true, selected: $viewModel.intent.subject)
+                .onChange(of: viewModel.intent.subject) { _, _ in
                     viewModel.resetAfterSubjectChange()
                 }
             
         case .movements:
-            RadioButtonGroup(title: section.rawValue, options: Movements.allCases, isEnabled: viewModel.selectedSubject != .scenery, selected: $viewModel.selectedMovement)
+            RadioButtonGroup(title: section.rawValue, options: Movements.allCases, isEnabled: viewModel.intent.subject != .scenery, selected: $viewModel.intent.movement)
             
         case .dof:
-            RadioButtonGroup(title: section.rawValue, options: DOF.allCases, isEnabled: viewModel.selectedSubject != .scenery, selected: $viewModel.selectedDOF)
+            RadioButtonGroup(title: section.rawValue, options: DOF.allCases, isEnabled: viewModel.intent.subject != .scenery, selected: $viewModel.intent.dof)
         }
     }
 }

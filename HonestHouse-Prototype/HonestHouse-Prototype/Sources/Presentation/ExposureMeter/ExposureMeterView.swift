@@ -33,6 +33,9 @@ struct ExposureMeterView: View {
     @State private var offset: Float = 0
     @State private var mode: String = "AMode"
     
+    // 입력된 의도
+    let inputIntent: Intent
+    
     var body: some View {
         ZStack {
             ExposureMeterRepersentable(
@@ -87,8 +90,4 @@ struct ExposureMeterView: View {
         .background(Color.white.opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
-}
-
-#Preview {
-    ExposureMeterView()
 }
