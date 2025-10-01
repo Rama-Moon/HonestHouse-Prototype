@@ -20,4 +20,16 @@ enum ModeSubtype: String {
             return .aperture
         }
     }
+    
+    /// 최상위 모드 귀결
+    var parentMode: CameraMode {
+        switch self {
+        case .M1, .M2:
+            return .MMode
+        case .A1, .A2, .A3:
+            return .AMode
+        case .S:
+            return .SMode
+        }
+    }
 }

@@ -20,7 +20,7 @@ final class ExposureManager {
         isNight: Bool,
         isBacklight: Bool,
         evBacklightBias: Double = 0.7
-    ) -> (subtype: ModeSubtype, base: ExposureSetting, spectrum: [ExposureSetting]) {
+    ) -> (recomMode: CameraMode, base: ExposureSetting, spectrum: [ExposureSetting]) {
         
         let evEff: Double
         
@@ -33,6 +33,7 @@ final class ExposureManager {
         
         // 1. 추천 모드 결정
         let subtype = decideModeSubtype(intent: intent, isNight: isNight)
+        let recomMode = subtype.parentMode
         
         // 2. 모드에 맞는 전략 선택
         let strategy = strategyForSubtype(subtype)
@@ -46,7 +47,7 @@ final class ExposureManager {
         // 스펙트럼 생성
         let spectrum = strategy.generateSpectrum(ev100: evEff, lens: lens, body: body, isoCap: isoCap)
         
-        return (subtype, base, spectrum)
+        return (recomMode, base, spectrum)
     }
     
     // MARK: - 내부 로직 함수
@@ -77,11 +78,28 @@ final class ExposureManager {
     }
     
     // ISO 보정
-    private func applyIsoCorrection(setting: ExposureSetting, ev100: Double, isoCap: Int) -> ExposureSetting {
-        var iso = isoFor(ev100: ev100, shutter: setting.shutter, aperture: setting.aperture)
-        if iso < 100 { iso = 100 }
-        if iso > Double(isoCap) { iso = Double(isoCap) }
-        return ExposureSetting(shutter: setting.shutter, aperture: setting.aperture, iso: Int(round(iso)))
+    private func applyIsoCorrection(
+        setting: ExposureSetting,
+        ev100: Double,
+        isoCap: Int
+    ) -> ExposureSetting {
+        // 계산된 ISO 값
+        var isoCalc = isoFor(ev100: ev100, shutter: setting.shutter, aperture: setting.aperture)
+        
+        // ISO 범위 강제
+        if isoCalc < 100 { isoCalc = 100 }
+        if isoCalc > Double(isoCap) { isoCalc = Double(isoCap) }
+        
+        // 가장 가까운 표준 ISO 스탑으로 보정
+        let nearest = isoStops
+            .filter { $0 <= isoCap } // isoCap 초과 값은 제외
+            .min(by: { abs(Double($0) - isoCalc) < abs(Double($1) - isoCalc) }) ?? 100
+        
+        return ExposureSetting(
+            shutter: setting.shutter,
+            aperture: setting.aperture,
+            iso: nearest
+        )
     }
 }
 

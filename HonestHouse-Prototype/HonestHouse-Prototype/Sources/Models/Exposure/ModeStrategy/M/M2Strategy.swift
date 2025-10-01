@@ -13,10 +13,15 @@ struct M2Strategy: ModeStrategy {
     func calculateBase(ev100: Double, lens: CameraLens, body: CameraBody) -> ExposureSetting {
         // 느린 셔터 고정
         let tBase = clamp(2.0, min: body.fastestShutterSpeed, max: body.slowestShutterSpeed)
-        // 가능한 한 개방 (최소 f/2.0 보장)
-        let nBase = max(2.0, lens.maxOpenAperture)
-        // ISO 계산 (EV 기반)
-        let iso = isoFor(ev100: ev100, shutter: tBase, aperture: nBase)
+        // EV 기반 조리개 계산
+        var nBase = sqrt(tBase * pow(2.0, ev100))
+        // f/2.0 이상 개방 보장
+        nBase = max(2.0, min(nBase, lens.minOpenAperture))
+        
+        // ISO 계산
+        var iso = isoFor(ev100: ev100, shutter: tBase, aperture: nBase)
+        iso = max(100, iso)
+        
         return ExposureSetting(shutter: tBase, aperture: nBase, iso: Int(max(100, round(iso))))
     }
 
@@ -25,7 +30,6 @@ struct M2Strategy: ModeStrategy {
         return generateShutterSpectrum(
             shutterRange: 2.0...15.0,
             aperture: max(2.0, lens.maxOpenAperture),
-            stepThirdStops: 1,
             ev100: ev100,
             body: body,
             isoCap: isoCap

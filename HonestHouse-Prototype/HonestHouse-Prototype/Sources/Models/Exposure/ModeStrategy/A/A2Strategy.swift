@@ -16,7 +16,10 @@ struct A2Strategy: ModeStrategy {
         let tRef = (nBase * nBase) / pow(2.0, ev100)
         let tHand = handHoldLimit(focalLength: lens.focalLength, cropFactor: body.cropFactor)
         let tBase = min(tRef, tHand)
-        let iso = isoFor(ev100: ev100, shutter: tBase, aperture: nBase)
+        // ISO 계산
+        var iso = isoFor(ev100: ev100, shutter: tBase, aperture: nBase)
+        iso = max(100, iso)
+        
         return ExposureSetting(shutter: tBase, aperture: nBase, iso: Int(max(100, round(iso))))
     }
 
@@ -26,7 +29,6 @@ struct A2Strategy: ModeStrategy {
         let hi = min(lens.minOpenAperture, 5.6)
         return generateApertureSpectrum(
             apertureRange: lo...hi,
-            stepThirdStops: 1,
             ev100: ev100,
             lens: lens,
             body: body,
