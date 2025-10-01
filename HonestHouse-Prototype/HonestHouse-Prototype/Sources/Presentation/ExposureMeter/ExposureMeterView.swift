@@ -34,6 +34,7 @@ struct ExposureMeterView: View {
     
     @State private var response = ""
     @State private var isLoading = false
+    @State private var isBacklit = false
     
     let inputIntent: Intent
     
@@ -60,6 +61,7 @@ struct ExposureMeterView: View {
                 Spacer()
                 
                 ZStack(alignment: .center) {
+                    SolarRotationView(isBacklit: $isBacklit)
                     exposureLockButton()
                     if !showDetailValue {
                         HStack {
