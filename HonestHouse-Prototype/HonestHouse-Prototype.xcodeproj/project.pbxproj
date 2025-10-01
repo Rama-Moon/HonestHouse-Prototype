@@ -272,6 +272,7 @@
 				INFOPLIST_FILE = "HonestHouse-Prototype/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSCameraUsageDescription = "카메라를 사용하여 노출 값을 측정합니다";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "현재 위치를 사용하여 태양의 위치를 계산합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -303,6 +304,7 @@
 				INFOPLIST_FILE = "HonestHouse-Prototype/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSCameraUsageDescription = "카메라를 사용하여 노출 값을 측정합니다";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "현재 위치를 사용하여 태양의 위치를 계산합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
