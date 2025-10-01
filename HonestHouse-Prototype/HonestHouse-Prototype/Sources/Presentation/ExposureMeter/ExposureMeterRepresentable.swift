@@ -1,5 +1,5 @@
 //
-//  ExposureMeterRepersentable.swift
+//  ExposureMeterRepresentable.swift
 //  HonestHouse-Prototype
 //
 //  Created by Rama on 9/30/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ExposureMeterRepersentable: UIViewRepresentable {
+struct ExposureMeterRepresentable: UIViewRepresentable {
     @Binding var ev: Double
     var onStabilized: () -> Void
     var onUnstabilized: () -> Void
