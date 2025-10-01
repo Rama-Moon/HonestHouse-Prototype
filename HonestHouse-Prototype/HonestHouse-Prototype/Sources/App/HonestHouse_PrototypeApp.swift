@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct HonestHouse_PrototypeApp: App {
@@ -13,5 +14,6 @@ struct HonestHouse_PrototypeApp: App {
         WindowGroup {
             RootView()
         }
+        .modelContainer(for: [CameraBody.self, CameraLens.self])
     }
 }

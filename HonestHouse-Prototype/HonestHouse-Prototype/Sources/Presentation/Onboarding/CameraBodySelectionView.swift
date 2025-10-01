@@ -6,10 +6,13 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct CameraBodySelectionView: View {
     let manufacturer: Manufacturer
     @Binding var path: [OnboardingRoute]
+    
+    var modelContext: ModelContext
     
     @State private var selectedBody: CameraBody? = nil
     
@@ -22,6 +25,7 @@ struct CameraBodySelectionView: View {
                 label: { $0.name }
             )
             CustomActiveButton(title: "렌즈 선택하기", action: {
+                modelContext.insert(selectedBody!)
                 path.append(.cameraLens(manufacturer))
             }, isEnabled: selectedBody != nil)
             .padding(.horizontal, 16)

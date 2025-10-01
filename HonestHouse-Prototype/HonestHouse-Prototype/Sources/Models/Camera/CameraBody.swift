@@ -6,11 +6,21 @@
 //
 
 import Foundation
+import SwiftData
 
-struct CameraBody: Identifiable, Equatable {
+@Model
+class CameraBody: Identifiable, Equatable {
     var id = UUID()
     let name: String
     let fastestShutterSpeed: Double // 초 단위 (1/8000s → 0.000125) - shutterMax
     let slowestShutterSpeed: Double // 초 단위 (30s → 30.0) - shutterMin
     let cropFactor: Double
+    
+    init(id: UUID = UUID(), name: String, fastestShutterSpeed: Double, slowestShutterSpeed: Double, cropFactor: Double) {
+        self.id = id
+        self.name = name
+        self.fastestShutterSpeed = fastestShutterSpeed
+        self.slowestShutterSpeed = slowestShutterSpeed
+        self.cropFactor = cropFactor
+    }
 }
