@@ -90,32 +90,58 @@ struct ExposureMeterView: View {
     
     func exposureValueDisplay() -> some View {
         VStack(spacing: 18) {
-            Text("\(mode)")
-                .font(.title)
-                .foregroundStyle(.black)
+            HStack {
+                Text("\(mode)")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(.black)
+                Spacer()
+                HStack(spacing: 16) {
+                    Text("EV:")
+                        .font(.system(size: 20, weight: .semibold))
+                    Text("\(ev, specifier: "%.2f")")
+                        .font(.system(size: 16, weight: .medium, design: .monospaced))
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 2)
+                        .background(
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.white.opacity(0.5))
+                        )
+                }
+            }
             
             HStack() {
                 Text("F:")
-                Text("5.6").valueChipStyle()
+                    .font(.system(size: 20, weight: .semibold))
+                Text("5.6")
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.white)
+                    )
                 Spacer()
-            }
-            
-            HStack {
                 Text("S:")
-                Text("1/100").valueChipStyle()
+                    .font(.system(size: 20, weight: .semibold))
+                Text("1/100")
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.white.opacity(0.5))
+                    )
                 Spacer()
-            }
-            
-            HStack {
                 Text("ISO:")
-                Text("100").valueChipStyle()
-                Spacer()
-            }
-            
-            HStack {
-                Text("EV:")
-                Text("\(ev, specifier: "%.2f")").valueChipStyle()
-                Spacer()
+                    .font(.system(size: 20, weight: .semibold))
+                Text("100")
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.white.opacity(0.5))
+                    )
             }
         }
         .padding(22)
