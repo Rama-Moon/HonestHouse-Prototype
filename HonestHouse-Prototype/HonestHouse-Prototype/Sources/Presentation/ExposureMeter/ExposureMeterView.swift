@@ -40,14 +40,15 @@ struct ExposureMeterView: View {
     
     var body: some View {
         ZStack {
-            ExposureMeterRepersentable(
+            ExposureMeterRepresentable(
                 ev: $ev,
                 onStabilized: {
                     isStabilized = true
                 },
                 onUnstabilized: {
                     isStabilized = false
-                }
+                },
+                isPaused: $showDetailValue
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea(.all, edges: .all)
