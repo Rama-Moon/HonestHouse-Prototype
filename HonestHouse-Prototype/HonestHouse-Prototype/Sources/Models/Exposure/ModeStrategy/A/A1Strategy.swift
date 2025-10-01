@@ -19,8 +19,11 @@ struct A1Strategy: ModeStrategy {
         let tHand = handHoldLimit(focalLength: lens.focalLength, cropFactor: body.cropFactor)
         // 더 빠른 쪽 선택 (흔들림 방지 우선)
         let tBase = min(tRef, tHand)
+        
         // ISO 계산 (EV 기반)
-        let iso = isoFor(ev100: ev100, shutter: tBase, aperture: nBase)
+        var iso = isoFor(ev100: ev100, shutter: tBase, aperture: nBase)
+        iso = max(100, iso)
+        
         return ExposureSetting(shutter: tBase, aperture: nBase, iso: Int(max(100, round(iso))))
     }
 
@@ -28,7 +31,6 @@ struct A1Strategy: ModeStrategy {
     func generateSpectrum(ev100: Double, lens: CameraLens, body: CameraBody, isoCap: Int) -> [ExposureSetting] {
         return generateApertureSpectrum(
             apertureRange: 8.0...11.0,
-            stepThirdStops: 1,
             ev100: ev100,
             lens: lens,
             body: body,

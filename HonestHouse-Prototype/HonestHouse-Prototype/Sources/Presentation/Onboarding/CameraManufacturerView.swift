@@ -28,7 +28,7 @@ struct CameraManufacturerView: View {
                 case .cameraBody(let m):
                     CameraBodySelectionView(manufacturer: m, path: $path, modelContext: modelContext)
                 case .cameraLens(let m):
-                    CameraLensSelectionView(manufacturer: m, modelContext: modelContext, isOnboarding: $isOnboarding)
+                    CameraLensSelectionView(manufacturer: m, isOnboarding: $isOnboarding, modelContext: modelContext)
                 }
             }
         }
