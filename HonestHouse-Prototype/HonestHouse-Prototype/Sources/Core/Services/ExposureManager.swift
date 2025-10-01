@@ -10,42 +10,45 @@ import SwiftUI
 
 final class ExposureManager {
     
-    let rules: [ModeRule] = [
-        ModeRule(place: "indoor", subject: "landscape", motion: "", dof: nil, night: nil, result: .A1),
-        ModeRule(place: "indoor", subject: "people", motion: "dynamic", dof: true, night: nil, result: .M1),
-        ModeRule(place: "indoor", subject: "people", motion: "dynamic", dof: false, night: nil, result: .S),
-        ModeRule(place: "indoor", subject: "people", motion: "static", dof: true, night: nil, result: .A2),
-        ModeRule(place: "indoor", subject: "people", motion: "static", dof: false, night: nil, result: .A3),
-        ModeRule(place: "outdoor", subject: "landscape", motion: "", dof: nil, night: true, result: .M2),
-        ModeRule(place: "outdoor", subject: "landscape", motion: "", dof: nil, night: false, result: .A3),
-        ModeRule(place: "outdoor", subject: "people", motion: "dynamic", dof: true, night: nil, result: .M1),
-        ModeRule(place: "outdoor", subject: "people", motion: "dynamic", dof: false, night: nil, result: .S),
-        ModeRule(place: "outdoor", subject: "people", motion: "static", dof: true, night: nil, result: .A2),
-        ModeRule(place: "outdoor", subject: "people", motion: "static", dof: false, night: nil, result: .A3),
-    ]
-    
-    func recommendExposure(
+    // MARK: - 실제 사용 함수
+    public func recommendExposure(
         body: CameraBody,
         lens: CameraLens,
         intent: Intent,
         ev100: Double,
         isoCap: Int,
         isNight: Bool,
+        isBacklight: Bool,
         evBacklightBias: Double
     ) -> (subtype: ModeSubtype, base: ExposureSetting, spectrum: [ExposureSetting]) {
         
-        let evEff = ev100 - evBacklightBias
+        // 역광일 때, EV 보정
+        if isBacklight {
+            let evEff = ev100 - evBacklightBias
+        } else {
+            let evEff = ev100
+        }
+        
+        // 1. 추천 모드 결정
         let subtype = decideModeSubtype(intent: intent, isNight: isNight)
+        
+        // 2. 모드에 맞는 전략 선택
         let strategy = strategyForSubtype(subtype)
         
+        // 3. Base 계산
         var base = strategy.calculateBase(ev100: evEff, lens: lens, body: body)
+        
+        // ISO 보정 (ISO 100 ~ isoCap 범위로 제한)
         base = applyIsoCorrection(setting: base, ev100: evEff, isoCap: isoCap)
         
+        // 스펙트럼 생성
         let spectrum = strategy.generateSpectrum(ev100: evEff, lens: lens, body: body, isoCap: isoCap)
         
         return (subtype, base, spectrum)
     }
     
+    // MARK: - 내부 로직 함수
+    // 모드에 따른 전략 매핑
     private func strategyForSubtype(_ subtype: ModeSubtype) -> ModeStrategy {
         switch subtype {
         case .M1: return M1Strategy()
@@ -57,7 +60,8 @@ final class ExposureManager {
         }
     }
     
-    func decideModeSubtype(intent: Intent, isNight: Bool) -> ModeSubtype {
+    // 모드 결정
+    private func decideModeSubtype(intent: Intent, isNight: Bool) -> ModeSubtype {
         for rule in rules {
             if (rule.place == intent.place || rule.place.isEmpty) &&
                (rule.subject == intent.subject || rule.subject.isEmpty) &&
@@ -70,6 +74,7 @@ final class ExposureManager {
         return .S
     }
     
+    // ISO 보정
     private func applyIsoCorrection(setting: ExposureSetting, ev100: Double, isoCap: Int) -> ExposureSetting {
         var iso = isoFor(ev100: ev100, shutter: setting.shutter, aperture: setting.aperture)
         if iso < 100 { iso = 100 }

@@ -11,6 +11,7 @@ struct A3Strategy: ModeStrategy {
     let subtype: ModeSubtype = .A3
 
     func calculateBase(ev100: Double, lens: CameraLens, body: CameraBody) -> ExposureSetting {
+        // 기본적으로 풍경과 동일 → f/8 기준
         let nBase = clamp(8.0, min: lens.maxOpenAperture, max: lens.minOpenAperture)
         let tRef = (nBase * nBase) / pow(2.0, ev100)
         let tHand = handHoldLimit(focalLength: lens.focalLength, cropFactor: body.cropFactor)
@@ -20,6 +21,7 @@ struct A3Strategy: ModeStrategy {
     }
 
     func generateSpectrum(ev100: Double, lens: CameraLens, body: CameraBody, isoCap: Int) -> [ExposureSetting] {
+        // f/8~11 범위에서 조리개 스펙트럼 생성
         return generateApertureSpectrum(
             apertureRange: 8.0...11.0,
             stepThirdStops: 1,
