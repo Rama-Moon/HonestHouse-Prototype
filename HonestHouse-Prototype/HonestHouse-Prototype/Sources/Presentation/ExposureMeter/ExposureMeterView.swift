@@ -138,15 +138,11 @@ struct ExposureMeterView: View {
             }
         }) {
             ZStack {
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 72, height: 72)
-                
-                Image(systemName: isStabilized ? "lock.open.fill" : "lock.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 30, height: 30)
-                    .foregroundColor(isStabilized ? .green : .black)
+                if showDetailValue {
+                    Image(.locked)
+                } else {
+                    Image(isStabilized ? .unlocked : .locked)
+                }
             }
         }
         .disabled(!isStabilized)
