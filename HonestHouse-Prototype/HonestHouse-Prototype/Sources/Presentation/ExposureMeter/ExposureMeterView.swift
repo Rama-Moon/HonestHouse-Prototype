@@ -25,6 +25,8 @@ enum CameraMode {
 }
 
 struct ExposureMeterView: View {
+    @Environment(\.dismiss) var dismiss
+    
     @State private var ev: Double = 0
     @State private var mode: String = "A Mode"
     @State private var isStabilized: Bool = false
@@ -32,6 +34,7 @@ struct ExposureMeterView: View {
     
     @State private var response = ""
     @State private var isLoading = false
+    @State private var isBacklit = false
     
     let inputIntent: Intent
     
@@ -47,6 +50,7 @@ struct ExposureMeterView: View {
                 }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea(.all, edges: .all)
             
             VStack {
                 if !showDetailValue {
@@ -56,7 +60,18 @@ struct ExposureMeterView: View {
                 
                 Spacer()
                 
-                exposureLockButton()
+                ZStack(alignment: .center) {
+                    SolarRotationView(isBacklit: $isBacklit)
+                    exposureLockButton()
+                    if !showDetailValue {
+                        HStack {
+                            exitButton()
+                                .padding(.leading, 40)
+                            Spacer()
+                        }
+                    }
+                }
+                .safeAreaPadding(.bottom, 10)
             }
         }
         .overlay {
@@ -67,45 +82,80 @@ struct ExposureMeterView: View {
                     response: $response,
                     showDetailValue: $showDetailValue
                 )
-                .padding(16)
+                .ignoresSafeArea()
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
     
     func exposureValueDisplay() -> some View {
         VStack(spacing: 18) {
-            Text("\(mode)")
-                .font(.title)
-                .foregroundStyle(.black)
+            HStack {
+                Text("\(mode)")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(.black)
+                Spacer()
+                HStack(spacing: 16) {
+                    Text("EV:")
+                        .font(.system(size: 20, weight: .semibold))
+                    Text("\(ev, specifier: "%.2f")")
+                        .font(.system(size: 16, weight: .medium, design: .monospaced))
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 2)
+                        .background(
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.white.opacity(0.5))
+                        )
+                }
+            }
             
             HStack() {
                 Text("F:")
-                Text("5.6").valueChipStyle()
+                    .font(.system(size: 20, weight: .semibold))
+                Text("5.6")
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.white)
+                    )
                 Spacer()
-            }
-            
-            HStack {
                 Text("S:")
-                Text("1/100").valueChipStyle()
+                    .font(.system(size: 20, weight: .semibold))
+                Text("1/100")
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.white.opacity(0.5))
+                    )
                 Spacer()
-            }
-            
-            HStack {
                 Text("ISO:")
-                Text("100").valueChipStyle()
-                Spacer()
-            }
-            
-            HStack {
-                Text("EV:")
-                Text("\(ev, specifier: "%.2f")").valueChipStyle()
-                Spacer()
+                    .font(.system(size: 20, weight: .semibold))
+                Text("100")
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.white.opacity(0.5))
+                    )
             }
         }
         .padding(22)
         .frame(maxWidth: .infinity)
         .background(Color.white.opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+    
+    func exitButton() -> some View {
+        Button {
+            dismiss()
+        } label: {
+            Image(.exitButton)
+        }
     }
     
     func exposureLockButton() -> some View {
@@ -116,15 +166,11 @@ struct ExposureMeterView: View {
             }
         }) {
             ZStack {
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 72, height: 72)
-                
-                Image(systemName: isStabilized ? "lock.open.fill" : "lock.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 30, height: 30)
-                    .foregroundColor(isStabilized ? .green : .black)
+                if showDetailValue {
+                    Image(.locked)
+                } else {
+                    Image(isStabilized ? .unlocked : .locked)
+                }
             }
         }
         .disabled(!isStabilized)
