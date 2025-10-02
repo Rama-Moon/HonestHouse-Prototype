@@ -113,8 +113,8 @@ struct ExposureMeterView: View {
             lens: lens,
             intent: inputIntent,
             ev100: ev,
-            isoCap: 20000,
-            isNight: false,
+            isoCap: 6400,
+            isNight: !SolarManager.shared.status.isSunUp,
             isBacklight: isBacklit
         )
         
