@@ -67,7 +67,10 @@ struct ExposureMeterView: View {
                 Spacer()
                 
                 ZStack(alignment: .center) {
-                    SolarRotationView(isBacklit: $isBacklit)
+                    SolarRotationView(
+                        isBacklit: $isBacklit,
+                        isPaused: showDetailValue || !SolarManager.shared.status.isSunUp
+                    )
                     exposureLockButton()
                     if !showDetailValue {
                         HStack {
