@@ -88,7 +88,8 @@ struct ExposureMeterView: View {
                     baseExposure: $baseExposure,
                     spectrum: $exposureSpectrum,
                     response: $response,
-                    showDetailValue: $showDetailValue
+                    showDetailValue: $showDetailValue,
+                    isBacklit: isBacklit
                 )
                 .ignoresSafeArea()
             }
