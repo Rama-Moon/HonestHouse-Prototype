@@ -13,11 +13,11 @@ enum CameraMode {
     var title: String {
         switch self {
         case .AMode:
-            return "AMode"
+            return "A Mode"
         case .SMode:
-            return "SMode"
+            return "S Mode"
         case .MMode:
-            return "MMode"
+            return "M Mode"
         }
     }
 }

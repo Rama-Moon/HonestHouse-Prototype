@@ -51,7 +51,7 @@ struct ExposureDetailView: View {
                                         .fill(.hhcolor(color: .buttonBackground(.disabled)))
                                 )
                             
-                            if mode == "AMode" || mode == "MMode" {
+                            if mode == "A Mode" || mode == "M Mode" {
                                 Group {
                                     Text("-")
                                     Text("\(last.aperture, specifier: "%.1f")")
@@ -84,7 +84,7 @@ struct ExposureDetailView: View {
                                         .fill(.hhcolor(color: .buttonBackground(.disabled)))
                                 )
                             
-                            if mode == "SMode" || mode == "MMode" {
+                            if mode == "S Mode" || mode == "M Mode" {
                                 Group {
                                     Text("-")
                                     Text(String(formatShutterSpeed(last.shutter)))
