@@ -28,18 +28,14 @@ public final class SolarManager: ObservableObject {
     @discardableResult
     public func refresh(at date: Date = Date()) -> SunStatus {
         let position = SolarPosition.compute(latitude: latitude, longitude: longitude, date: date)
+
+        elevation = position.elevation
+        azimuth = position.azimuth
+
         let newStatus: SunStatus = (position.elevation > -0.833)
             ? .sunUp(elevation: position.elevation, azimuth: position.azimuth)
             : .noSun
-        
-        switch newStatus {
-        case .sunUp(let elev, let az):
-            elevation = elev
-            azimuth = az
-        case .noSun:
-            elevation = nil
-            azimuth = nil
-        }
+
         status = newStatus
         return newStatus
     }
