@@ -9,26 +9,17 @@ import Foundation
 
 struct A2Strategy: ModeStrategy {
     let subtype: ModeSubtype = .A2
-
-    func calculateBase(ev100: Double, lens: CameraLens, body: CameraBody) -> ExposureSetting {
-        // 아웃포커싱 확보: f/2.8 이상 개방
-        let nBase = max(lens.maxOpenAperture, 2.8)
-        let tRef = (nBase * nBase) / pow(2.0, ev100)
-        let tHand = handHoldLimit(focalLength: lens.focalLength, cropFactor: body.cropFactor)
-        let tBase = min(tRef, tHand)
-        // ISO 계산
-        var iso = isoFor(ev100: ev100, shutter: tBase, aperture: nBase)
-        iso = max(100, iso)
-        
-        return ExposureSetting(shutter: tBase, aperture: nBase, iso: Int(max(100, round(iso))))
+    
+    func calculateBase(ev100: Double, lens: CameraLens, body: CameraBody, isoCap: Int) -> ExposureSetting {
+        return baseWithFixedAperture(N: max(2.8, lens.maxOpenAperture), ev100: ev100, lens: lens, body: body, isoCap: isoCap)
     }
-
+    
     func generateSpectrum(ev100: Double, lens: CameraLens, body: CameraBody, isoCap: Int) -> [ExposureSetting] {
-        // f/2.8~5.6 사이 범위에서 조리개 스펙트럼 생성
-        let lo = max(lens.maxOpenAperture, 2.8)
-        let hi = min(lens.minOpenAperture, 5.6)
+        let base = calculateBase(ev100: ev100, lens: lens, body: body, isoCap: isoCap)
+        let low = max(2.8, lens.maxOpenAperture)
+        let high = min(5.6, lens.minOpenAperture)
         return generateApertureSpectrum(
-            apertureRange: lo...hi,
+            base: base, apertureRange: low...high,
             ev100: ev100,
             lens: lens,
             body: body,
