@@ -34,12 +34,17 @@ func baseWithFixedAperture(
     body: CameraBody,
     isoCap: Int
 ) -> ExposureSetting {
-    // 렌지 지원 범위 내에서 가장 가까운 표준 조리개 값으로 스냅
+    // 렌즈 지원 범위 내에서 가장 가까운 표준 조리개 값으로 스냅
     let Nclamped = snapApertureToLens(N, lens: lens)
     // EV 식으로 셔터 시간 계산: tRef = N^2 / 2^EV
     let tRef = (Nclamped * Nclamped) / pow(2.0, ev100)
+    
+    // hand-hold 적용 후, 바디 셔터 스톱으로 스냅
+    let tHand = handHoldLimit(focalLength: lens.focalLength, cropFactor: body.cropFactor)
+    let tUsed = min(tRef, tHand)
+    
     // 계산된 셔터를 바디가 지원하는 범위 내에서 가장 가까운 값으로 스냅
-    let t = snapShutterToBody(tRef, body: body)
+    let t = snapShutterToBody(tUsed, body: body)
     // ISO 보정: ISO100 기준 EV와의 차이를 계산하여 부족하면 ISO를 끌어올림
     let iso = correctISO(ev100: ev100, shutter: t, aperture: Nclamped, isoCap: isoCap)
     return ExposureSetting(shutter: t, aperture: Nclamped, iso: iso)
