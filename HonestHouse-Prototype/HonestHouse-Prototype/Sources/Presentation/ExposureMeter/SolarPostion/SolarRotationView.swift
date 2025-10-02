@@ -16,6 +16,8 @@ struct SolarRotationView: View {
     @State private var relativeBearing: Double = 0.0
     @Binding var isBacklit: Bool
     
+    let isPaused: Bool
+    
     private let refreshInterval: TimeInterval = 600.0
     @State private var timerCancellable: AnyCancellable?
     
@@ -36,16 +38,15 @@ struct SolarRotationView: View {
                 }
             }
             .rotationEffect(.degrees(relativeBearing))
-            .animation(.easeInOut(duration: 0.12), value: relativeBearing)
+            .animation(isPaused ? nil : .easeInOut(duration: 0.12), value: relativeBearing)
         }
-        .onAppear {
-            heading.start()
-            startTimer()
-        }
+        .onAppear { applyRunningState() }
         .onDisappear {
-            heading.stop()
-            timerCancellable?.cancel()
-            timerCancellable = nil
+            stopHeading()
+            stopTimer()
+        }
+        .onChange(of: isPaused) {
+            applyRunningState()
         }
         .onReceive(locationProvider.$coordinate) { newCoordinate in
             if let coordinate = newCoordinate {
@@ -62,6 +63,20 @@ struct SolarRotationView: View {
         }
     }
     
+    private func applyRunningState() {
+        if isPaused {
+            stopHeading()
+            stopTimer()
+        } else {
+            heading.start()
+            startTimer()
+        }
+    }
+    
+    private func stopHeading() {
+        heading.stop()
+    }
+
     private func startTimer() {
         timerCancellable = Timer.publish(every: refreshInterval, on: .main, in: .common)
             .autoconnect()
@@ -71,8 +86,14 @@ struct SolarRotationView: View {
             }
     }
     
+    private func stopTimer() {
+        timerCancellable?.cancel()
+        timerCancellable = nil
+    }
+    
     private func updateRelativeValues() {
-        guard let sunAzimuth = solar.azimuth, let sunElevation = solar.elevation else { return }
+        guard !isPaused, let sunAzimuth = solar.azimuth, let sunElevation = solar.elevation else { return }
+        
         let deviceHeading = heading.headingInDegrees
         relativeBearing = signedAngleDelta(from: deviceHeading, to: sunAzimuth)
         isBacklit = checkBacklit(relativeBearing: relativeBearing, sunElevation: sunElevation, currentState: isBacklit)
