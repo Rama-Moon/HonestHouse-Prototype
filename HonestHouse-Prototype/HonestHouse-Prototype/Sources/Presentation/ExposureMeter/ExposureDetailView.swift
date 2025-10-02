@@ -36,23 +36,75 @@ struct ExposureDetailView: View {
                     }
                     
                     HStack() {
-                        Text("F:")
-                            .font(.system(size: 20, weight: .semibold))
-                        
-                        Text("5.6")
-                            .font(.system(size: 16, weight: .medium, design: .monospaced))
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 2)
-                            .background(
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(.hhcolor(color: .buttonBackground(.disabled)))
-                            )
-                        
-                        if mode == "AMode" {
-                            Group {
-                                Text("-")
-                                Text("11")
+                        if let first = spectrum.first,
+                           let last = spectrum.last {
+                            Text("F:")
+                                .font(.system(size: 20, weight: .semibold))
+                            
+                            Text("\(first.aperture, specifier: "%.1f")")
+                                .font(.system(size: 16, weight: .medium, design: .monospaced))
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 2)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(.hhcolor(color: .buttonBackground(.disabled)))
+                                )
+                            
+                            if mode == "AMode" || mode == "MMode" {
+                                Group {
+                                    Text("-")
+                                    Text("\(last.aperture, specifier: "%.1f")")
+                                }
+                                .font(.system(size: 16, weight: .medium, design: .monospaced))
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 2)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(.hhcolor(color: .buttonBackground(.disabled)))
+                                )
                             }
+                            
+                            Spacer()
+                        }
+                    }
+                    
+                    if let first = spectrum.first,
+                       let last = spectrum.last {
+                        HStack {
+                            Text("S:")
+                                .font(.system(size: 20, weight: .semibold))
+                            
+                            Text(String(formatShutterSpeed(first.shutter)))
+                                .font(.system(size: 16, weight: .medium, design: .monospaced))
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 2)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(.hhcolor(color: .buttonBackground(.disabled)))
+                                )
+                            
+                            if mode == "SMode" || mode == "MMode" {
+                                Group {
+                                    Text("-")
+                                    Text(String(formatShutterSpeed(last.shutter)))
+                                }
+                                .font(.system(size: 16, weight: .medium, design: .monospaced))
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 2)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(.hhcolor(color: .buttonBackground(.disabled)))
+                                )
+                            }
+                            
+                            Spacer()
+                        }
+                    }
+                    
+                    HStack {
+                        Text("ISO:")
+                            .font(.system(size: 20, weight: .semibold))
+                        Text("\(100)")
                             .font(.system(size: 16, weight: .medium, design: .monospaced))
                             .padding(.horizontal, 4)
                             .padding(.vertical, 2)
@@ -60,16 +112,13 @@ struct ExposureDetailView: View {
                                 RoundedRectangle(cornerRadius: 4)
                                     .fill(.hhcolor(color: .buttonBackground(.disabled)))
                             )
-                        }
-                        
                         Spacer()
                     }
                     
                     HStack {
-                        Text("S:")
+                        Text("EV:")
                             .font(.system(size: 20, weight: .semibold))
-                        
-                        Text("1/100")
+                        Text("\(ev, specifier: "%.2f")")
                             .font(.system(size: 16, weight: .medium, design: .monospaced))
                             .padding(.horizontal, 4)
                             .padding(.vertical, 2)
@@ -77,64 +126,30 @@ struct ExposureDetailView: View {
                                 RoundedRectangle(cornerRadius: 4)
                                     .fill(.hhcolor(color: .buttonBackground(.disabled)))
                             )
-                        
-                        if mode == "AMode" {
-                            Group {
-                                Text("-")
-                                Text("1/100")
-                            }
-                            .font(.system(size: 16, weight: .medium, design: .monospaced))
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 2)
-                            .background(
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(.hhcolor(color: .buttonBackground(.disabled)))
-                            )
-                            Spacer()
-                        }
-                        
-                        HStack {
-                            Text("ISO:")
-                                .font(.system(size: 20, weight: .semibold))
-                            Text("100")
-                                .font(.system(size: 16, weight: .medium, design: .monospaced))
-                                .padding(.horizontal, 4)
-                                .padding(.vertical, 2)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(.hhcolor(color: .buttonBackground(.disabled)))
-                                )
-                            Spacer()
-                        }
-                        
-                        HStack {
-                            Text("EV:")
-                                .font(.system(size: 20, weight: .semibold))
-                            Text("\(ev, specifier: "%.2f")")
-                                .font(.system(size: 16, weight: .medium, design: .monospaced))
-                                .padding(.horizontal, 4)
-                                .padding(.vertical, 2)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(.hhcolor(color: .buttonBackground(.disabled)))
-                                )
-                            Spacer()
-                        }
-                    }
-                    
-                    VStack(alignment:.leading, spacing: 6) {
-                        Text("Why This Setting")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("\(response)")
-                            .font(.system(size: 16, weight: .regular, design: .monospaced))
-                            .lineLimit(nil)
+                        Spacer()
                     }
                 }
-                .padding(22)
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .padding(.horizontal, 16)
+                
+                VStack(alignment:.leading, spacing: 6) {
+                    Text("Why This Setting")
+                        .font(.system(size: 16, weight: .semibold))
+                    Text("\(response)")
+                        .font(.system(size: 16, weight: .regular, design: .monospaced))
+                        .lineLimit(nil)
+                }
             }
+            .padding(22)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .padding(.horizontal, 16)
         }
+    }
+}
+
+func formatShutterSpeed(_ shutter: Double) -> String {
+    if shutter >= 1 {
+        return "\(Int(shutter))\""
+    } else {
+        return "1/\(Int(round(1/shutter)))"
     }
 }

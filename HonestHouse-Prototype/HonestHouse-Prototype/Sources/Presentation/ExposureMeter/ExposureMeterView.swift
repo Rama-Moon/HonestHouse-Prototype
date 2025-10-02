@@ -8,23 +8,6 @@
 import SwiftUI
 import SwiftData
 
-enum CameraMode {
-    case AMode
-    case SMode
-    case MMode
-    
-    var title: String {
-        switch self {
-        case .AMode:
-            return "AMode"
-        case .SMode:
-            return "SMode"
-        case .MMode:
-            return "MMode"
-        }
-    }
-}
-
 struct ExposureMeterView: View {
     @Environment(\.dismiss) var dismiss
     
@@ -195,13 +178,13 @@ struct ExposureMeterView: View {
                         RoundedRectangle(cornerRadius: 4)
                             .fill([.SMode, .MMode].contains(recommendedMode) ? Color.white : Color.white.opacity(0.5))
                     )
-                     
-                     Spacer()
-                     
-                     Text("ISO:")
+                
+                Spacer()
+                
+                Text("ISO:")
                     .font(.system(size: 20, weight: .semibold))
-                     
-                     Text("\(baseExposure?.iso ?? 0)")
+                
+                Text("\(baseExposure?.iso ?? 0)")
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 2)
@@ -228,7 +211,7 @@ struct ExposureMeterView: View {
     func exposureLockButton() -> some View {
         Button(action: {
             Task {
-//                await sendRequest()
+                //                await sendRequest()
                 getDescription(for: inputIntent)
                 showDetailValue = true
             }
