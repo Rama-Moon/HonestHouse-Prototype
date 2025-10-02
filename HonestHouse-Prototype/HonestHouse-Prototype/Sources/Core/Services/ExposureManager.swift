@@ -39,7 +39,7 @@ final class ExposureManager {
         let strategy = strategyForSubtype(subtype)
         
         // 3. Base 계산
-        var base = strategy.calculateBase(ev100: evEff, lens: lens, body: body)
+        var base = strategy.calculateBase(ev100: evEff, lens: lens, body: body, isoCap: isoCap)
         
         // ISO 보정 (ISO 100 ~ isoCap 범위로 제한)
         base = applyIsoCorrection(setting: base, ev100: evEff, isoCap: isoCap)

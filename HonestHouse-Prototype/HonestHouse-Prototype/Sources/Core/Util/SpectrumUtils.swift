@@ -7,6 +7,7 @@
 
 import Foundation
 
+// MARK: - 표준 스탑 정의
 // 셔터스피드 스탑 (1/8000 ~ 30초)
 let shutterStops: [Double] = [
     1.0/8000, 1.0/6400, 1.0/5000, 1.0/4000,
@@ -44,28 +45,29 @@ let isoStops: [Int] = [
     10000, 12800, 16000, 20000, 25600
 ]
 
-/// 주어진 값에 가장 가까운 스탑 인덱스 찾기
-func nearestStopIndex(value: Double, stops: [Double]) -> Int {
-    var nearestIndex = 0
-    var minDiff = Double.greatestFiniteMagnitude
-    for (i, s) in stops.enumerated() {
-        let diff = abs(s - value)
-        if diff < minDiff {
-            minDiff = diff
-            nearestIndex = i
-        }
-    }
-    return nearestIndex
-}
-
+// MARK: - 표준 스탑 스냅 처리 함수
 /// 주어진 값과 가장 가까운 스탑 선택
 func nearestStop(to value: Double, from stops: [Double], cap: Double? = nil) -> Double {
     let filtered = cap != nil ? stops.filter { $0 <= cap! } : stops
     return filtered.min(by: { abs($0 - value) < abs($1 - value) }) ?? value
 }
 
+/// 렌즈 범위 내에서 조리개 표준스톱 스냅까지 수행
+func snapApertureToLens(_ N: Double, lens: CameraLens) -> Double {
+    let cand = apertureStops.filter { $0 >= lens.maxOpenAperture && $0 <= lens.minOpenAperture }
+    return nearestStop(to: clamp(N, min: lens.maxOpenAperture, max: lens.minOpenAperture), from: cand)
+}
+
+/// 바디 범위 내에서 셔터스피드 표준스톱 스냅까지 수행
+func snapShutterToBody(_ t: Double, body: CameraBody) -> Double {
+    let cand = shutterStops.filter { $0 >= body.fastestShutterSpeed && $0 <= body.slowestShutterSpeed }
+    return nearestStop(to: clamp(t, min: body.fastestShutterSpeed, max: body.slowestShutterSpeed), from: cand)
+}
+
+// MARK: - 스펙트럼 구하는 함수
 /// 조리개 범위를 일정 스텝으로 훑으면서 스펙트럼 생성
 func generateApertureSpectrum(
+    base: ExposureSetting,
     apertureRange: ClosedRange<Double>,
     ev100: Double,
     lens: CameraLens,
@@ -73,73 +75,75 @@ func generateApertureSpectrum(
     isoCap: Int
 ) -> [ExposureSetting] {
     var out: [ExposureSetting] = []
+    let eps = 1e-6
 
-    // 범위 안에 들어가는 스탑만 추출
-    let stopsInRange = apertureStops.filter { apertureRange.contains($0) }
+    // 후보 조리개 값 = 렌즈 범위 ∩ 요청된 범위
+    let minN = max(lens.maxOpenAperture, apertureRange.lowerBound)
+    let maxN = min(lens.minOpenAperture, apertureRange.upperBound)
+    let cand = apertureStops.filter { f in
+        f + eps >= minN && f - eps <= maxN
+    }
 
-    let tHand = handHoldLimit(focalLength: lens.focalLength, cropFactor: body.cropFactor)
-
-    for f in stopsInRange {
-        // EV 기반 셔터
+    for f in cand {
+        // EV 기반으로 셔터 계산
         let tRef = (f * f) / pow(2.0, ev100)
-        var t = min(tRef, tHand)
-        t = clamp(t, min: body.fastestShutterSpeed, max: body.slowestShutterSpeed)
         
-        // 표준 스탑 근사값
+        // 손떨림 한계와 비교 -> 더 빠른 쪽 사용
+        let tHand = handHoldLimit(focalLength: lens.focalLength, cropFactor: body.cropFactor)
+        var t = min(tRef, tHand)
+        
+        // 바디가 지원하는 셔터 범위 내로 clamp
+        t = clamp(t, min: body.fastestShutterSpeed, max: body.slowestShutterSpeed)
+
+        // 표준 스탑 근사
         let nearestAperture = nearestStop(to: f, from: apertureStops)
         let nearestShutter  = nearestStop(to: t, from: shutterStops)
 
-        var iso = isoFor(ev100: ev100, shutter: t, aperture: f)
-        if iso < 100 { iso = 100 }
-        if iso > Double(isoCap) { iso = Double(isoCap) }
-        
-        // 가장 가까운 표준 ISO 선택
-        let nearestISO = nearestStop(to: iso, from: isoStops.map { Double($0) }, cap: Double(isoCap))
+        // ISO 보정
+        let iso = correctISO(ev100: ev100, shutter: nearestShutter, aperture: nearestAperture, isoCap: isoCap)
 
-        out.append(ExposureSetting(shutter: nearestShutter, aperture: nearestAperture, iso: Int(nearestISO)))
+        out.append(ExposureSetting(shutter: nearestShutter, aperture: nearestAperture, iso: iso))
     }
-
     return out
 }
 
 /// 셔터 범위를 일정 스텝으로 훑으면서 스펙트럼 생성
 func generateShutterSpectrum(
+    base: ExposureSetting,
     shutterRange: ClosedRange<Double>,
-    aperture: Double, // 초기값 (무시해도 됨, EV 기반으로 다시 계산)
     ev100: Double,
+    lens: CameraLens,
     body: CameraBody,
     isoCap: Int
 ) -> [ExposureSetting] {
     var out: [ExposureSetting] = []
+    let eps = 1e-6
 
-    // 범위 안에 들어가는 스탑만 추출
-    let stopsInRange = shutterStops.filter { shutterRange.contains($0) }
+    // 후보 셔터 값 선택(바디 지원 범위, 파라미터 범위 교집합) -> limit 범위 안전하게 보정
+    let minT = max(body.fastestShutterSpeed, min(shutterRange.lowerBound, shutterRange.upperBound))
+    let maxT = min(body.slowestShutterSpeed, max(shutterRange.lowerBound, shutterRange.upperBound))
 
-    for t in stopsInRange {
-        let tClamped = clamp(t, min: body.fastestShutterSpeed, max: body.slowestShutterSpeed)
-
-        // EV 기반으로 조리개 역산
-        let nCalc = sqrt(tClamped * pow(2.0, ev100))
-        let nearestAperture = nearestStop(to: nCalc, from: apertureStops)
-
-        // ISO 계산
-        var iso = isoFor(ev100: ev100, shutter: tClamped, aperture: nearestAperture)
-        if iso < 100 { iso = 100 }
-        if iso > Double(isoCap) { iso = Double(isoCap) }
-
-        let nearestISO = nearestStop(to: iso, from: isoStops.map { Double($0) }, cap: Double(isoCap))
-
-        // 표준화된 스탑 조합 추가
-        out.append(
-            ExposureSetting(
-                shutter: nearestStop(to: tClamped, from: shutterStops),
-                aperture: nearestAperture,
-                iso: Int(nearestISO)
-            )
-        )
+    let cand = shutterStops.filter { t in
+        t + eps >= minT && t - eps <= maxT
     }
 
+    for t in cand {
+        let tClamped = clamp(t, min: body.fastestShutterSpeed, max: body.slowestShutterSpeed)
+
+        // EV 기반으로 조리개 역산 → 렌즈 범위 내에서 스냅
+        let nCalc = sqrt(tClamped * pow(2.0, ev100))
+        let nearestAperture = snapApertureToLens(nCalc, lens: lens)
+
+        // ISO 보정
+        let iso = correctISO(ev100: ev100, shutter: tClamped, aperture: nearestAperture, isoCap: isoCap)
+
+        // 표준 스탑으로 정리
+        let nearestShutter  = nearestStop(to: tClamped, from: shutterStops)
+
+        out.append(ExposureSetting(shutter: nearestShutter, aperture: nearestAperture, iso: iso))
+    }
     return out
 }
+
 
 
