@@ -6,23 +6,7 @@
 //
 
 import SwiftUI
-
-enum CameraMode {
-    case AMode
-    case SMode
-    case MMode
-    
-    var title: String {
-        switch self {
-        case .AMode:
-            return "AMode"
-        case .SMode:
-            return "SMode"
-        case .MMode:
-            return "MMode"
-        }
-    }
-}
+import SwiftData
 
 struct ExposureMeterView: View {
     @Environment(\.dismiss) var dismiss
@@ -35,6 +19,27 @@ struct ExposureMeterView: View {
     @State private var response = ""
     @State private var isLoading = false
     @State private var isBacklit = false
+    
+    @State private var recommendedMode: CameraMode = .MMode
+    @State private var baseExposure: ExposureSetting?
+    @State private var exposureSpectrum: [ExposureSetting] = []
+    
+    @Query private var savedBodies: [CameraBody]
+    @Query private var savedLenses: [CameraLens]
+    
+    var apertureDisplay: String {
+        if recommendedMode == .SMode {
+            return "Auto"
+        }
+        return String(format: "%.2f", baseExposure?.aperture ?? 0.0)
+    }
+    
+    var shutterDisplay: String {
+        if recommendedMode == .AMode {
+            return "Auto"
+        }
+        return String(formatShutterSpeed(baseExposure?.shutter ?? 0.01))
+    }
     
     let inputIntent: Intent
     
@@ -80,13 +85,51 @@ struct ExposureMeterView: View {
                 ExposureDetailView(
                     ev: $ev,
                     mode: $mode,
+                    baseExposure: $baseExposure,
+                    spectrum: $exposureSpectrum,
                     response: $response,
                     showDetailValue: $showDetailValue
                 )
                 .ignoresSafeArea()
             }
         }
+        .onAppear {
+            updateExposureSettings()
+        }
+        .onChange(of: ev) { oldValue, newValue in
+            updateExposureSettings()
+        }
         .navigationBarBackButtonHidden(true)
+    }
+    
+    private func updateExposureSettings() {
+        guard let body = savedBodies.first,
+              let lens = savedLenses.first else {
+            return
+        }
+        
+        let result = ExposureManager.recommendExposure(
+            body: body,
+            lens: lens,
+            intent: inputIntent,
+            ev100: ev,
+            isoCap: 6400,
+            isNight: !SolarManager.shared.status.isSunUp,
+            isBacklight: isBacklit
+        )
+        
+        recommendedMode = result.recomMode
+        baseExposure = result.base
+        exposureSpectrum = result.spectrum
+        mode = result.recomMode.title
+    }
+    
+    func formatShutterSpeed(_ shutter: Double) -> String {
+        if shutter >= 1 {
+            return "\(Int(shutter))\""
+        } else {
+            return "1/\(Int(round(1/shutter)))"
+        }
     }
     
     func exposureValueDisplay() -> some View {
@@ -113,35 +156,42 @@ struct ExposureMeterView: View {
             HStack() {
                 Text("F:")
                     .font(.system(size: 20, weight: .semibold))
-                Text("5.6")
+                
+                Text(apertureDisplay)
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill([.AMode, .MMode].contains(recommendedMode) ? Color.white : Color.white.opacity(0.5))
+                    )
+                
+                Spacer()
+                
+                Text("S:")
+                    .font(.system(size: 20, weight: .semibold))
+                
+                Text(shutterDisplay)
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill([.SMode, .MMode].contains(recommendedMode) ? Color.white : Color.white.opacity(0.5))
+                    )
+                
+                Spacer()
+                
+                Text("ISO:")
+                    .font(.system(size: 20, weight: .semibold))
+                
+                Text("\(baseExposure?.iso ?? 0)")
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 2)
                     .background(
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.white)
-                    )
-                Spacer()
-                Text("S:")
-                    .font(.system(size: 20, weight: .semibold))
-                Text("1/100")
-                    .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 2)
-                    .background(
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.white.opacity(0.5))
-                    )
-                Spacer()
-                Text("ISO:")
-                    .font(.system(size: 20, weight: .semibold))
-                Text("100")
-                    .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 2)
-                    .background(
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.white.opacity(0.5))
                     )
             }
         }
@@ -162,7 +212,8 @@ struct ExposureMeterView: View {
     func exposureLockButton() -> some View {
         Button(action: {
             Task {
-                await sendRequest()
+                //                await sendRequest()
+                getDescription(for: inputIntent)
                 showDetailValue = true
             }
         }) {
@@ -182,7 +233,7 @@ struct ExposureMeterView: View {
         
         let userInput =
         """
-        현재 Exposure Value인 \(ev)값과 조리개, 셔터스피드, ISO 값이 왜 이렇게 설정됐는지 설명
+        Hello, GPT
         """
         
         Task {
@@ -200,5 +251,9 @@ struct ExposureMeterView: View {
             }
             isLoading = false
         }
+    }
+    
+    func getDescription(for intent: Intent) {
+        response = Guiding.from(intent)?.description ?? ""
     }
 }

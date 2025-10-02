@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>API_BASE_URL</key>
-	<string>$(API_BASE_URL)</string>
+	<string>https://api.openai.com/v1/chat/completions</string>
 	<key>API_KEY</key>
 	<string>$(API_KEY)</string>
 </dict>
