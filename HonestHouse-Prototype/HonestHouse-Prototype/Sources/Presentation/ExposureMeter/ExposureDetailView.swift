@@ -10,7 +10,6 @@ import SwiftUI
 struct ExposureDetailView: View {
     @Binding var ev: Double
     @Binding var mode: String
-    @Binding var baseExposure: ExposureSetting?
     @Binding var spectrum: [ExposureSetting]
     @Binding var response: String
     @Binding var showDetailValue: Bool
@@ -105,20 +104,29 @@ struct ExposureDetailView: View {
                     }
                     
                     HStack {
-                        Text("ISO:")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(SolarManager.shared.status.isSunUp ? Color.black : Color.white)
-                        if let baseExposure = baseExposure {
-                            Text("\(baseExposure.iso)")
-                                .font(.system(size: 16, weight: .medium, design: .monospaced))
-                                .padding(.horizontal, 4)
-                                .padding(.vertical, 2)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(.hhcolor(color: .buttonBackground(.disabled)))
-                                )
+                        if let first = spectrum.first,
+                           let last = spectrum.last {
+                            Text("ISO:")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundStyle(SolarManager.shared.status.isSunUp ? Color.black : Color.white)
+                            
+                            Group {
+                                Text("\(first.iso)")
+                                if first.iso != last.iso {
+                                    Text("-")
+                                    Text("\(last.iso)")
+                                }
+                            }
+                            .font(.system(size: 16, weight: .medium, design: .monospaced))
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(.hhcolor(color: .buttonBackground(.disabled)))
+                            )
+
+                            Spacer()
                         }
-                        Spacer()
                     }
                     
                     HStack {

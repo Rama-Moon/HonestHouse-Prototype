@@ -24,6 +24,7 @@ class ExposureMeterUIView: UIView {
     var onStabilized: (() -> Void)?
     var onUnstabilized: (() -> Void)?
     
+    private var hasConfigured = false
     private var isCurrentlyStabilized = false
     private var isPaused = false
     
@@ -66,74 +67,91 @@ class ExposureMeterUIView: UIView {
     }
     
     private func setCameraSession() {
+        guard !hasConfigured else { return }
+        hasConfigured = true
+        
+        configureSession()
+        setPreviewLayer()
+        finishSessionSetting()
+    }
+    
+    func configureSession() {
         session.beginConfiguration()
         session.sessionPreset = .photo
         
-        if let camera = AVCaptureDevice.default(
-            .builtInWideAngleCamera,
-            for: .video,
-            position: .back
-        ) {
-            device = camera
-            
-            do {
-                let input = try AVCaptureDeviceInput(device: camera)
-                
-                if session.canAddInput(input) {
-                    session.addInput(input)
-                }
-            } catch {
-                print("@Log - camera error: \(error)")
-            }
-        }
+        addCameraInput()
+        addVideoOutput()
         
-        let videoOutput = AVCaptureVideoDataOutput()
-        
-        if session.canAddOutput(videoOutput) {
-            session.addOutput(videoOutput)
-        }
-        
+        session.commitConfiguration()
+    }
+    
+    func setPreviewLayer() {
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer?.videoGravity = .resizeAspectFill
-
+        
         if let previewLayer = previewLayer {
             self.layer.addSublayer(previewLayer)
         }
-        
-        session.commitConfiguration()
-        resume()
-        
+    }
+    
+    func finishSessionSetting() {
         DispatchQueue.global(qos: .background).async {
             self.session.startRunning()
         }
         
         DispatchQueue.main.async {
-            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
-                self.readExposureValues()
+            self.startReadingEV()
+        }
+    }
+    
+    func addCameraInput() {
+        guard let camera = AVCaptureDevice.default(
+            .builtInWideAngleCamera,
+            for: .video,
+            position: .back
+        ) else {
+            print("@Log - Can't find camera")
+            return
+        }
+        
+        device = camera
+        
+        do {
+            let input = try AVCaptureDeviceInput(device: camera)
+            if session.canAddInput(input) {
+                session.addInput(input)
             }
+        } catch {
+            print("@Log - Camera error: \(error)")
+        }
+    }
+    
+    func addVideoOutput() {
+        let videoOutput = AVCaptureVideoDataOutput()
+        if session.canAddOutput(videoOutput) {
+            session.addOutput(videoOutput)
         }
     }
     
     private func startReadingEV() {
         stopReadingEV()
         readTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            self?.readExposureValues()
+            self?.readEV()
         }
         RunLoop.main.add(readTimer!, forMode: .common)
     }
     
     private func stopReadingEV() {
         readTimer?.invalidate()
-                readTimer = nil
+        readTimer = nil
     }
     
-    private func readExposureValues() {
+    private func readEV() {
         guard !isPaused, let device = device else { return }
         
         let iso = device.iso
         let exposure = device.exposureDuration.seconds
         let aperture = device.lensAperture
-        
         let ev: Double
         
         if aperture > 0 && exposure > 0 {
@@ -204,13 +222,17 @@ class ExposureMeterUIView: UIView {
         previewLayer?.connection?.isEnabled = false
         stopReadingEV()
         if session.isRunning {
-            DispatchQueue.global(qos: .background).async { self.session.stopRunning() }
+            DispatchQueue.global(qos: .background).async {
+                self.session.stopRunning()
+            }
         }
     }
     
     private func resume() {
         if !session.isRunning {
-            DispatchQueue.global(qos: .background).async { self.session.startRunning() }
+            DispatchQueue.global(qos: .background).async {
+                self.session.startRunning()
+            }
         }
         previewLayer?.connection?.isEnabled = true
         startReadingEV()

@@ -88,7 +88,6 @@ struct ExposureMeterView: View {
                 ExposureDetailView(
                     ev: $ev,
                     mode: $mode,
-                    baseExposure: $baseExposure,
                     spectrum: $exposureSpectrum,
                     response: $response,
                     showDetailValue: $showDetailValue,
